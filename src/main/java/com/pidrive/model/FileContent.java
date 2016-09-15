@@ -3,6 +3,7 @@ package com.pidrive.model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.hibernate.FetchMode;
 import org.hibernate.annotations.Fetch;
+import org.hibernate.type.Type;
 
 import javax.persistence.*;
 
@@ -17,6 +18,8 @@ public class FileContent {
     private long id;
 
     @Lob
+    @Column(columnDefinition = "LONGBLOB")
+    @JsonIgnore
     private byte[] content;
 
     @OneToOne(cascade = CascadeType.ALL,fetch = FetchType.LAZY)

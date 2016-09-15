@@ -11,5 +11,6 @@ import java.util.List;
  */
 @Transactional
 public interface RecordRepository extends JpaRepository<Record,Long>{
+    public List<Record> findByNameAndParentAndIsFolder(String name, Record parent, boolean isFolder);
 
 }

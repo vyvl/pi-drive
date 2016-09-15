@@ -1,9 +1,12 @@
 package com.pidrive.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import org.hibernate.annotations.GeneratorType;
+import org.hibernate.annotations.*;
 
 import javax.persistence.*;
+import javax.persistence.CascadeType;
+import javax.persistence.Entity;
+import javax.persistence.Table;
 import java.util.List;
 
 /**
@@ -19,7 +22,9 @@ public class Record {
 
     private String name;
 
-    private boolean folder;
+    private boolean isFolder;
+
+    private boolean isTrashed;
 
     @ManyToOne
     @JoinColumn(referencedColumnName = "id")
@@ -27,10 +32,14 @@ public class Record {
     private Record parent;
 
     @OneToMany(mappedBy = "parent")
+    @Cascade(org.hibernate.annotations.CascadeType.DELETE)
+    @JsonIgnore
     private List<Record> children;
 
     @OneToOne(mappedBy = "record", cascade = CascadeType.MERGE)
+    @Cascade(org.hibernate.annotations.CascadeType.DELETE)
     private FileContent content;
+
 
     public FileContent getContent() {
         return content;
@@ -57,11 +66,11 @@ public class Record {
     }
 
     public boolean isFolder() {
-        return folder;
+        return isFolder;
     }
 
     public void setFolder(boolean folder) {
-        this.folder = folder;
+        this.isFolder = folder;
     }
 
     public Record getParent() {
@@ -81,4 +90,11 @@ public class Record {
     }
 
 
+    public boolean isTrashed() {
+        return isTrashed;
+    }
+
+    public void setTrashed(boolean trashed) {
+        isTrashed = trashed;
+    }
 }
