@@ -5,6 +5,8 @@ import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.pidrive.exception.IllegalTypeException;
+import com.pidrive.exception.RecordNotFound;
 import com.pidrive.model.FileContent;
 import com.pidrive.model.Record;
 import com.pidrive.repository.FileContentRepository;
@@ -48,23 +50,19 @@ public class FileController {
             record.setFolder(root.get("folder").asBoolean());
             Record parent = recordService.getRecord(root.get("parent").asLong());
             record.setParent(parent);
-            record = recordService.saveRecord(record);
+            record = recordService.saveNewRecord(record);
         } catch (IOException e) {
             e.printStackTrace();
         }
-        ResponseEntity<?> responseEntity = null;
-        if(record==null){
-            responseEntity = new ResponseEntity<>("File with same name exists",HttpStatus.CONFLICT);
-        }
-        else {
-            responseEntity = new ResponseEntity<>(record,HttpStatus.OK);
-        }
-        return responseEntity;
+        return  new ResponseEntity<>(record,HttpStatus.OK);
     }
 
     @RequestMapping(value = "/{id}",method = RequestMethod.GET)
     public ResponseEntity<?> getRecord(@PathVariable Long id){
         Record record = recordService.getRecord(id);
+        if(record==null){
+            throw new RecordNotFound("No record with this id exists");
+        }
         return new ResponseEntity<Object>(record,HttpStatus.OK);
     }
 
@@ -78,6 +76,9 @@ public class FileController {
     @RequestMapping(value = "/{id}/content", method = RequestMethod.GET)
     public ResponseEntity<Resource> downloadFile(@PathVariable Long id){
         Record record = recordService.getRecord(id);
+        if(record.isFolder()){
+            throw new IllegalTypeException("File Expected, Got Folder");
+        }
         FileContent content = record.getContent();
         ByteArrayResource byteArrayResource = new ByteArrayResource(content.getContent());
         HttpHeaders header = new HttpHeaders();
@@ -107,7 +108,7 @@ public class FileController {
 
     @RequestMapping(value = "/{id}",method = RequestMethod.DELETE)
     public String  trashRecord(@PathVariable Long id){
-        String status = recordService.deleteRecord(id);
+        String status = recordService.trashRecord(id);
         return status;
     }
 
@@ -126,7 +127,7 @@ public class FileController {
     public ResponseEntity<?> getChildren(@PathVariable long id){
         Record record = recordService.getRecord(id);
         if(!record.isFolder()){
-
+            throw new IllegalTypeException("File Expected, Got Folder");
         }
         List<Record> children = record.getChildren();
         return new ResponseEntity<Object>(children,HttpStatus.OK);
