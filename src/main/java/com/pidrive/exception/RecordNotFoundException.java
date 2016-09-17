@@ -6,10 +6,10 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 /**
  * Created by SiddarthaPeteti on 9/15/2016.
  */
-@ResponseStatus(HttpStatus.BAD_REQUEST)
-public class IllegalTypeException extends RuntimeException {
+@ResponseStatus(HttpStatus.NOT_FOUND)
+public class RecordNotFoundException extends RuntimeException {
 
-    public IllegalTypeException(String message){
+    public RecordNotFoundException(String message){
         super(message);
     }
 

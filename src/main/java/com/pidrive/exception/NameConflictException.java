@@ -10,14 +10,9 @@ import javax.print.attribute.standard.MediaSize;
  */
 @ResponseStatus(HttpStatus.CONFLICT)
 public class NameConflictException extends RuntimeException {
-    private static final long serialVersionUID = 1L;
-    public NameConflictException(){
 
-    }
     public NameConflictException(String message){
         super(message);
     }
-    public NameConflictException(String message, Throwable cause){
-        super(message,cause);
-    }
+
 }

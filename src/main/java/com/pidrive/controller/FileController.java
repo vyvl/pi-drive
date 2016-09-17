@@ -1,18 +1,12 @@
 package com.pidrive.controller;
 
 
-import com.fasterxml.jackson.core.JsonParseException;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.pidrive.exception.IllegalTypeException;
-import com.pidrive.exception.RecordNotFound;
 import com.pidrive.model.FileContent;
 import com.pidrive.model.Record;
-import com.pidrive.repository.FileContentRepository;
 import com.pidrive.service.RecordService;
-import com.sun.xml.internal.ws.client.sei.ResponseBuilder;
-import org.apache.catalina.connector.Response;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
@@ -24,6 +18,8 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -40,42 +36,44 @@ public class FileController {
 
     @RequestMapping(method = RequestMethod.POST)
     @ResponseBody
-    public ResponseEntity<?> createRecord(@RequestBody String recordJSON){
-
-        ObjectMapper objectMapper = new ObjectMapper();
-        Record record = new Record();
-        try {
-            JsonNode root = objectMapper.readValue(recordJSON,JsonNode.class);
-            record.setName(root.get("name").asText());
-            record.setFolder(root.get("folder").asBoolean());
-            Record parent = recordService.getRecord(root.get("parent").asLong());
-            record.setParent(parent);
-            record = recordService.saveNewRecord(record);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+    public ResponseEntity<?> createRecord(@RequestBody Record record){
+        record = recordService.saveNewRecord(record);
         return  new ResponseEntity<>(record,HttpStatus.OK);
     }
 
     @RequestMapping(value = "/{id}",method = RequestMethod.GET)
     public ResponseEntity<?> getRecord(@PathVariable Long id){
+        Record record = recordService.getUntrashedRecord(id);
+        return new ResponseEntity<>(record,HttpStatus.OK);
+    }
+
+    @RequestMapping(value = "/{id}/children", method = RequestMethod.GET)
+    public ResponseEntity<?> getChildren(@PathVariable long id){
         Record record = recordService.getRecord(id);
-        if(record==null){
-            throw new RecordNotFound("No record with this id exists");
+        if(!record.isFolder()){
+            throw new IllegalTypeException("Folder Expected, Got File");
         }
-        return new ResponseEntity<Object>(record,HttpStatus.OK);
+        List<Record> children = record.getChildren();
+        List<Record> unTrashedChildren = new ArrayList<>();
+        for (int i = 0; i < children.size(); i++) {
+            Record child = children.get(i);
+            if(!child.isTrashed()){
+                unTrashedChildren.add(child);
+            }
+        }
+        return new ResponseEntity<Object>(unTrashedChildren,HttpStatus.OK);
     }
 
     @RequestMapping(value = "/{id}/content", method = RequestMethod.POST)
     public ResponseEntity<?> uploadFile(@PathVariable Long id, @RequestParam MultipartFile file){
         Record record = recordService.setContent(id,file);
-        ResponseEntity<?> resp = new ResponseEntity<Object>(record,HttpStatus.OK);
+        ResponseEntity<?> resp = new ResponseEntity<>(record,HttpStatus.OK);
         return resp;
     }
 
     @RequestMapping(value = "/{id}/content", method = RequestMethod.GET)
     public ResponseEntity<Resource> downloadFile(@PathVariable Long id){
-        Record record = recordService.getRecord(id);
+        Record record = recordService.getUntrashedRecord(id);
         if(record.isFolder()){
             throw new IllegalTypeException("File Expected, Got Folder");
         }
@@ -90,32 +88,38 @@ public class FileController {
                 .body(byteArrayResource);
     }
 
-    @RequestMapping(value = "/{id}", method = RequestMethod.PUT)
-    public ResponseEntity<?> updateRecord(@PathVariable Long id,@RequestBody String recordJSON){
-        ObjectMapper objectMapper = new ObjectMapper();
-        Record record = recordService.getRecord(id);
-        try {
-            JsonNode node = objectMapper.readValue(recordJSON,JsonNode.class);
-            record.setName(node.get("name").asText());
-            Record parent = recordService.getRecord(node.get("parent").asLong());
-            record.setParent(parent);
-            record = recordService.saveRecord(record);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return new ResponseEntity<Object>(record,HttpStatus.OK);
+    @RequestMapping(value = "/{id}",method = RequestMethod.DELETE)
+    public ResponseEntity<?>  trashRecord(@PathVariable Long id){
+       Record record = recordService.trashRecord(id);
+        return new ResponseEntity<>(record,HttpStatus.OK);
     }
 
-    @RequestMapping(value = "/{id}",method = RequestMethod.DELETE)
-    public String  trashRecord(@PathVariable Long id){
-        String status = recordService.trashRecord(id);
-        return status;
+    @RequestMapping(value = "/{id}/untrash",method = RequestMethod.POST)
+    public ResponseEntity<?>  unTrashRecord(@PathVariable Long id){
+        Record record = recordService.getRecord(id);
+        if(!record.isTrashed()){
+            throw new IllegalStateException("Record is not trashed");
+        }
+        record.setTrashed(false);
+        record = recordService.saveRecord(record);
+        return new ResponseEntity<>(record,HttpStatus.OK);
     }
 
     @RequestMapping(value = "/{id}/trash",method = RequestMethod.DELETE)
-    public String  deleteRecord(@PathVariable Long id){
+    public ResponseEntity<Object> deleteRecord(@PathVariable Long id){
         String status = recordService.deleteRecord(id);
-        return status;
+        Map<String,String> statusMap = new HashMap<>();
+        statusMap.put("status",status);
+        return new ResponseEntity<Object>(statusMap,HttpStatus.OK);
+    }
+
+    @RequestMapping(value = "/{id}/trash",method = RequestMethod.GET)
+    public ResponseEntity<Object> getTrashedRecord(@PathVariable Long id){
+        Record record = recordService.getRecord(id);
+        if(!record.isTrashed()){
+            throw new IllegalStateException("Record is not trashed");
+        }
+        return new ResponseEntity<>(record,HttpStatus.OK);
     }
 
     @RequestMapping(value = "/{id}/copy", method = RequestMethod.POST, consumes = "application/json")
@@ -123,30 +127,47 @@ public class FileController {
         return null;
     }
 
-    @RequestMapping(value = "/{id}/children", method = RequestMethod.GET)
-    public ResponseEntity<?> getChildren(@PathVariable long id){
-        Record record = recordService.getRecord(id);
-        if(!record.isFolder()){
-            throw new IllegalTypeException("File Expected, Got Folder");
+
+
+    @RequestMapping(value = "/{id}/rename", method = RequestMethod.POST)
+    public ResponseEntity<?> renameRecord(@PathVariable Long id, @RequestBody String jsonBody) {
+        Record record = recordService.getUntrashedRecord(id);
+        JsonNode node = null;
+        try {
+            node = new ObjectMapper().readValue(jsonBody,JsonNode.class);
+        } catch (IOException e) {
+            throw new IllegalTypeException("Response body in in not proper json format");
         }
-        List<Record> children = record.getChildren();
-        return new ResponseEntity<Object>(children,HttpStatus.OK);
+        if(node.get("newName")==null){
+            throw new IllegalTypeException("Response body in in not proper json format");
+        }
+        record.setName(node.get("newName").asText());
+        record = recordService.saveRecord(record);
+        return new ResponseEntity<>(record,HttpStatus.OK);
     }
 
-    @RequestMapping(value = "/{id}/rename", method = RequestMethod.GET)
-    public ResponseEntity<?> renameRecord(@PathVariable Long id, @RequestBody String newName){
-        Record record = recordService.getRecord(id);
-        record.setName(newName);
+    @RequestMapping(value = "/{id}/move", method = RequestMethod.POST)
+    public ResponseEntity<?> moveRecord(@PathVariable Long id, @RequestBody String newParent){
+        Record record = recordService.getUntrashedRecord(id);
+        JsonNode node = null;
+        try {
+            node = new ObjectMapper().readValue(newParent,JsonNode.class);
+        } catch (IOException e) {
+            throw new IllegalTypeException("Response body in in not proper json format");
+        }
+        if(node.get("newParent")==null){
+            throw new IllegalTypeException("Response body in in not proper json format");
+        }
+        Record parent = recordService.getRecord(node.get("newParent").asLong());
+        if(!parent.isFolder()){
+            throw new IllegalStateException("Cant move a record into a file. Expected Folder. Got File");
+        }
+        if(recordService.isAncestor(parent,record)){
+            throw new IllegalStateException("Move a parent inside child is not permitted");
+        }
+        record.setParent(parent);
         record = recordService.saveRecord(record);
-        return new ResponseEntity<Object>(record,HttpStatus.OK);
-    }
-
-    @RequestMapping(value = "/{id}/move", method = RequestMethod.GET)
-    public ResponseEntity<?> moveRecord(@PathVariable Long id, @RequestBody long newParent){
-        Record record = recordService.getRecord(id);
-        record.setParent(recordService.getRecord(newParent));
-        record = recordService.saveRecord(record);
-        return new ResponseEntity<Object>(record,HttpStatus.OK);
+        return new ResponseEntity<>(record,HttpStatus.OK);
     }
 
 

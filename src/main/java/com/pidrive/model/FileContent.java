@@ -15,6 +15,7 @@ import javax.persistence.*;
 public class FileContent {
     @Id
     @GeneratedValue
+    @Column(name = "CONTENT_ID")
     private long id;
 
     @Lob
@@ -23,7 +24,7 @@ public class FileContent {
     private byte[] content;
 
     @OneToOne(cascade = CascadeType.ALL,fetch = FetchType.LAZY)
-    @JoinColumn(name = "record_id", referencedColumnName = "id")
+    @JoinColumn(name = "RECORD_ID", referencedColumnName = "RECORD_ID")
     @JsonIgnore
     private Record record;
 

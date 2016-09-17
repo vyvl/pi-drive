@@ -16,7 +16,7 @@ public class User{
     private String password;
 
     @OneToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name = "root_id", referencedColumnName = "id")
+    @JoinColumn(name = "root_id", referencedColumnName = "RECORD_ID")
     private Record root;
 
     public String getUsername() {

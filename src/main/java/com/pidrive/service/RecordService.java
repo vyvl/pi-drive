@@ -2,17 +2,18 @@ package com.pidrive.service;
 
 import com.pidrive.exception.IllegalTypeException;
 import com.pidrive.exception.NameConflictException;
+import com.pidrive.exception.RecordNotFoundException;
 import com.pidrive.model.FileContent;
 import com.pidrive.model.Record;
 import com.pidrive.repository.FileContentRepository;
 import com.pidrive.repository.RecordRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.stereotype.Repository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import javax.print.attribute.standard.MediaSize;
 import java.io.IOException;
 import java.util.List;
 
@@ -20,7 +21,7 @@ import java.util.List;
  * Created by SiddarthaPeteti on 9/11/2016.
  */
 @Service
-@Repository
+@ComponentScan("com.pidrive")
 public class RecordService {
     @Autowired
     private RecordRepository recordRepository;
@@ -45,33 +46,45 @@ public class RecordService {
 
     @Transactional
     public Record getRecord(Long id){
-        return recordRepository.findOne(id);
+        Record record =  recordRepository.findOne(id);
+        if(record==null){
+            throw new RecordNotFoundException("No record with this id exists");
+        }
+        return record;
+    }
+
+    @Transactional
+    public Record getUntrashedRecord(Long id){
+        Record record = this.getRecord(id);
+        if(record.isTrashed()){
+            throw new RecordNotFoundException("No record with this id exists");
+        }
+        return record;
     }
 
     @Transactional
     public String deleteRecord(Long id){
         String status= "";
-        Record record = recordRepository.findOne(id);
+        Record record = this.getRecord(id);
         if(record.isTrashed()) {
             recordRepository.delete(id);
             status = "File deleted successfully.";
         }
         else{
-            record.setTrashed(true);
-            recordRepository.saveAndFlush(record);
-            status = "File moved to trash.";
+            throw new IllegalStateException("File not trashed. You can only delete trashed files.");
         }
         return status;
     }
 
     @Transactional
-    public String trashRecord(Long id){
+    public Record trashRecord(Long id){
         Record record = this.getRecord(id);
         if(record.isTrashed()){
             throw new IllegalStateException("Record is trashed already");
         }
         record.setTrashed(true);
-        return "Successfully trashed your file with ID:"+id;
+        record = this.saveRecord(record);
+        return record;
     }
 
     @Transactional
@@ -85,7 +98,7 @@ public class RecordService {
 
     @Transactional
     public Record setContent(long id,MultipartFile file){
-        Record record = this.getRecord(id);
+        Record record = this.getUntrashedRecord(id);
         if(record.isFolder()){
             throw new IllegalTypeException("File Expected, Got Folder");
         }
@@ -105,5 +118,15 @@ public class RecordService {
         record.setContent(content);
         record = this.saveRecord(record);
         return record;
+    }
+
+    public boolean isAncestor(Record child, Record ancestor){
+        while (child.getParent()!=null){
+            if(child.getParent().getId()==ancestor.getId()){
+                return true;
+            }
+            child = child.getParent();
+        }
+        return false;
     }
 }
