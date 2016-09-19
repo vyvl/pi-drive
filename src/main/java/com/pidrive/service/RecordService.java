@@ -56,8 +56,24 @@ public class RecordService {
     @Transactional
     public Record getUntrashedRecord(Long id){
         Record record = this.getRecord(id);
-        if(record.isTrashed()){
+        if(this.isAncestorTrashed(record)){
             throw new RecordNotFoundException("No record with this id exists");
+        }
+        return record;
+    }
+
+    public Record getUntrashedFile(Long id){
+        Record record = this.getUntrashedRecord(id);
+        if(record.isFolder()){
+            throw new IllegalTypeException("File Expected, Got Folder");
+        }
+        return record;
+    }
+
+    public Record getUntrashedFolder(Long id){
+        Record record = this.getUntrashedRecord(id);
+        if(record.isFolder()){
+            throw new IllegalTypeException("Folder Expected, Got File");
         }
         return record;
     }
@@ -128,5 +144,20 @@ public class RecordService {
             child = child.getParent();
         }
         return false;
+    }
+
+    public boolean isAncestorTrashed(Record record){
+       while (record !=null){
+           if(record.isTrashed()){
+               return true;
+           }
+           record = record.getParent();
+       }
+        return false;
+    }
+
+    public List<Record> getTrashedRecords(){
+        List<Record> trashedRecords = recordRepository.findByIsTrashed(true);
+        return trashedRecords;
     }
 }

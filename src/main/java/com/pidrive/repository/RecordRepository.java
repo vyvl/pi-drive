@@ -14,4 +14,6 @@ import java.util.List;
 public interface RecordRepository extends JpaRepository<Record,Long>{
     public List<Record> findByNameAndParentAndIsFolder(String name, Record parent, boolean isFolder);
 
+    public List<Record> findByIsTrashed(boolean isTrashed);
+
 }

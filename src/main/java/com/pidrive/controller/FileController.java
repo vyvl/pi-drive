@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.pidrive.exception.IllegalTypeException;
 import com.pidrive.model.FileContent;
 import com.pidrive.model.Record;
+import com.pidrive.repository.FileContentRepository;
 import com.pidrive.service.RecordService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ByteArrayResource;
@@ -33,6 +34,8 @@ public class FileController {
     @Autowired
     private RecordService recordService;
 
+    @Autowired
+    private FileContentRepository contentRepository;
 
     @RequestMapping(method = RequestMethod.POST)
     @ResponseBody
@@ -124,7 +127,19 @@ public class FileController {
 
     @RequestMapping(value = "/{id}/copy", method = RequestMethod.POST, consumes = "application/json")
     public Record copyRecord(@PathVariable long id,@RequestBody long newID){
-        return null;
+
+        Record newRecord = new Record();
+        Record record = recordService.getRecord(id);
+        newRecord.setName(record.getName());
+        newRecord.setParent(recordService.getUntrashedFolder(newID));
+        newRecord = recordService.saveNewRecord(newRecord);
+        FileContent copyContent = new FileContent();
+        FileContent content = record.getContent();
+        copyContent.setContent(content.getContent());
+        contentRepository.saveAndFlush(content);
+        newRecord.setContent(copyContent);
+        recordService.saveRecord(newRecord);
+        return newRecord;
     }
 
 
@@ -169,6 +184,14 @@ public class FileController {
         record = recordService.saveRecord(record);
         return new ResponseEntity<>(record,HttpStatus.OK);
     }
+
+    @RequestMapping(value = "/trash",method = RequestMethod.GET)
+    public ResponseEntity<?> getTrashedRecords(){
+        List<Record> trashedRecords = recordService.getTrashedRecords();
+        return new ResponseEntity<>(trashedRecords,HttpStatus.OK);
+    }
+
+
 
 
 }
