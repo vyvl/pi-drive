@@ -5,8 +5,10 @@ import com.pidrive.exception.NameConflictException;
 import com.pidrive.exception.RecordNotFoundException;
 import com.pidrive.model.FileContent;
 import com.pidrive.model.Record;
+import com.pidrive.model.Tag;
 import com.pidrive.repository.FileContentRepository;
 import com.pidrive.repository.RecordRepository;
+import com.pidrive.repository.TagRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.stereotype.Repository;
@@ -16,6 +18,8 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Created by SiddarthaPeteti on 9/11/2016.
@@ -27,6 +31,9 @@ public class RecordService {
     private RecordRepository recordRepository;
     @Autowired
     private  FileContentRepository fileContentRepository;
+
+    @Autowired
+    private TagRepository tagRepository;
 
     @Transactional
     public Record saveRecord(Record record){
@@ -159,5 +166,21 @@ public class RecordService {
     public List<Record> getTrashedRecords(){
         List<Record> trashedRecords = recordRepository.findByIsTrashed(true);
         return trashedRecords;
+    }
+
+    public Record addTags(Long id, List<String> tags){
+        Record record = this.getUntrashedRecord(id);
+        Set<Tag> tagsSet = record.getTags();
+        Set<String> tagsStrings = tagsSet.stream().map(tag -> (tag.getTag())).map(String::toLowerCase).collect(Collectors.toSet());
+        for (int i = 0; i < tags.size(); i++) {
+            if(!tagsStrings.contains(tags.get(i))){
+                Tag tag = new Tag();
+                tag.setRecord(record);
+                tag.setTag(tags.get(i));
+                tagRepository.saveAndFlush(tag);
+            }
+        }
+        record = this.getUntrashedRecord(id);
+        return record;
     }
 }

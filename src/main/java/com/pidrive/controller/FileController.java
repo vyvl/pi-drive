@@ -3,11 +3,18 @@ package com.pidrive.controller;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.jayway.jsonpath.DocumentContext;
+import com.jayway.jsonpath.JsonPath;
 import com.pidrive.exception.IllegalTypeException;
+import com.pidrive.exception.TagNotFoundException;
 import com.pidrive.model.FileContent;
 import com.pidrive.model.Record;
+import com.pidrive.model.Tag;
 import com.pidrive.repository.FileContentRepository;
+import com.pidrive.repository.TagRepository;
 import com.pidrive.service.RecordService;
+import com.pidrive.service.TagService;
+import com.sun.javaws.jnl.LibraryDesc;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
@@ -36,6 +43,12 @@ public class FileController {
 
     @Autowired
     private FileContentRepository contentRepository;
+
+    @Autowired
+    private TagRepository tagRepository;
+
+    @Autowired
+    private TagService tagService;
 
     @RequestMapping(method = RequestMethod.POST)
     @ResponseBody
@@ -192,6 +205,32 @@ public class FileController {
     }
 
 
+    @RequestMapping(value = "/{id}/tag", method = RequestMethod.POST)
+    public ResponseEntity<?> tagRecord(@PathVariable Long id, @RequestBody String tagsJson){
+        DocumentContext jsonContext = JsonPath.parse(tagsJson);
+        String jsonTagsPath = "$.tags";
+        List<String> tags = jsonContext.read(jsonTagsPath);
+        Record record = recordService.addTags(id,tags);
+        return new ResponseEntity<Object>(record,HttpStatus.OK);
+    }
+
+    @RequestMapping(value = "/{id}/{tag}", method = RequestMethod.DELETE)
+    public ResponseEntity<?> deleteTag(@PathVariable Long id, @PathVariable String tag){
+        Record record = recordService.getRecord(id);
+        Tag tagEntity = tagRepository.findByRecordAndTag(record,tag);
+        if(tagEntity==null){
+            throw new TagNotFoundException("Tag not found");
+        }
+        tagRepository.delete(tagEntity);
+        record = recordService.getRecord(id);
+        return new ResponseEntity<Object>(record,HttpStatus.OK);
+    }
+
+    @RequestMapping(value = "/tags/{tag}",method = RequestMethod.GET)
+    public ResponseEntity<?> getRecordsByTag(@PathVariable String tag){
+        List<Record> records = tagService.findRecordsByTag(tag);
+        return new ResponseEntity<Object>(records,HttpStatus.OK);
+    }
 
 
 }

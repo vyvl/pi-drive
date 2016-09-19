@@ -18,6 +18,7 @@ import javax.persistence.Entity;
 import javax.persistence.Table;
 import java.io.IOException;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Created by SiddarthaPeteti on 9/11/2016.
@@ -52,6 +53,10 @@ public class Record {
     @Cascade(org.hibernate.annotations.CascadeType.DELETE)
     private FileContent content;
 
+    @OneToMany(mappedBy = "record")
+    @Cascade(org.hibernate.annotations.CascadeType.DELETE)
+    @JsonIgnore
+    private Set<Tag> tags;
 
     public FileContent getContent() {
         return content;
@@ -114,6 +119,14 @@ public class Record {
     public void setTrashed(boolean trashed) {
         isTrashed = trashed;
     }
+
+    public Set<Tag> getTags() {
+        return tags;
+    }
+
+    public void setTags(Set<Tag> tags) {
+        this.tags = tags;
+    }
 }
 
 class RecordDeserializer extends JsonDeserializer<Record> {
@@ -160,6 +173,19 @@ class RecordSerializer extends JsonSerializer<Record>{
         }
         else {
             jsonGenerator.writeNumberField("parent",record.getParent().getId());
+        }
+        if(record.getTags()!=null){
+            jsonGenerator.writeFieldName("tags");
+            jsonGenerator.writeStartArray();
+            Set<Tag> tags = record.getTags();
+            tags.stream().map(tag -> (tag.getTag())).forEach(s -> {
+                try {
+                    jsonGenerator.writeString(s);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            });
+            jsonGenerator.writeEndArray();
         }
         jsonGenerator.writeEndObject();
     }
