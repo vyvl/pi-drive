@@ -17,11 +17,12 @@ class TestGet extends React.Component<any,{path:string,records:IRecord[]}>{
         this.update = this.update.bind(this);
         this.reset = this.reset.bind(this);
     }
-    update(e){
+    update(e:IRecord){
+        if(e.folder){
       this.setState({
-          path:`${e}/children`,records:[]
+          path:`${e.id}/children`,records:[]
       },this.fillPage);
-      
+        }
     }
     reset(){
         this.setState({
@@ -46,7 +47,7 @@ class TestGet extends React.Component<any,{path:string,records:IRecord[]}>{
     }
     render(){
         let files =  this.state.records.map(rec => {
-            return <Record key={rec.id} data={rec} c={this.update}></Record>;
+            return <Record key={rec.id} data={rec} click={this.update}></Record>;
         })
         return (
            <Grid>
