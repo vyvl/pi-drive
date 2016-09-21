@@ -79,7 +79,7 @@ public class RecordService {
 
     public Record getUntrashedFolder(Long id){
         Record record = this.getUntrashedRecord(id);
-        if(record.isFolder()){
+        if(!record.isFolder()){
             throw new IllegalTypeException("Folder Expected, Got File");
         }
         return record;
@@ -126,7 +126,7 @@ public class RecordService {
             throw new IllegalTypeException("File Expected, Got Folder");
         }
         String name = file.getOriginalFilename();
-        record.setName(name);
+        //record.setName(name);
         FileContent content = record.getContent();
         if(content==null){
             content = new FileContent();
@@ -182,5 +182,15 @@ public class RecordService {
         }
         record = this.getUntrashedRecord(id);
         return record;
+    }
+
+    public List<Record> getAllRecords(){
+        List<Record> recordList = recordRepository.findAll();
+        return recordList;
+    }
+
+    public Long emptyTrash(){
+        Long deletedCount = recordRepository.removeByIsTrashed(true);
+        return deletedCount;
     }
 }

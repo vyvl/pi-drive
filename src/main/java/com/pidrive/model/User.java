@@ -11,6 +11,10 @@ import javax.persistence.*;
 public class User{
 
     @Id
+    @GeneratedValue
+    @Column(name = "USER_ID")
+    private long id;
+
     private String username;
     @JsonIgnore
     private String password;

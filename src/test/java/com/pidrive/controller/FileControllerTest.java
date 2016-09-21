@@ -2,6 +2,7 @@ package com.pidrive.controller;
 
 import com.pidrive.model.FileContent;
 import com.pidrive.model.Record;
+import com.pidrive.repository.RecordRepository;
 import com.pidrive.service.RecordService;
 import org.junit.After;
 import org.junit.Before;
@@ -66,12 +67,12 @@ public class FileControllerTest {
         Record record = new Record();
         record.setName("folder");
         record.setId(1);
-        when(recordService.getRecord(1L)).thenReturn(record);
-        mockMvc.perform(get("/files/1"))
+        when(recordService.getUntrashedRecord(7L)).thenReturn(record);
+        mockMvc.perform(get("/files/7"))
+                .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("id").value(1))
-                .andExpect(jsonPath("name").value("folder"))
-                .andDo(print());
+                .andExpect(jsonPath("name").value("folder"));
     }
 
 }

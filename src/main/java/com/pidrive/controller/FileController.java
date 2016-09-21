@@ -139,16 +139,17 @@ public class FileController {
     }
 
     @RequestMapping(value = "/{id}/copy", method = RequestMethod.POST, consumes = "application/json")
-    public Record copyRecord(@PathVariable long id,@RequestBody long newID){
+    public Record copyRecord(@PathVariable long id,@RequestBody long newParentId){
 
         Record newRecord = new Record();
         Record record = recordService.getRecord(id);
         newRecord.setName(record.getName());
-        newRecord.setParent(recordService.getUntrashedFolder(newID));
+        newRecord.setParent(recordService.getUntrashedFolder(newParentId));
         newRecord = recordService.saveNewRecord(newRecord);
         FileContent copyContent = new FileContent();
         FileContent content = record.getContent();
         copyContent.setContent(content.getContent());
+        copyContent.setRecord(newRecord);
         contentRepository.saveAndFlush(content);
         newRecord.setContent(copyContent);
         recordService.saveRecord(newRecord);
@@ -198,14 +199,14 @@ public class FileController {
         return new ResponseEntity<>(record,HttpStatus.OK);
     }
 
-    @RequestMapping(value = "/trash",method = RequestMethod.GET)
+    @RequestMapping(value = "/list/trash",method = RequestMethod.GET)
     public ResponseEntity<?> getTrashedRecords(){
         List<Record> trashedRecords = recordService.getTrashedRecords();
         return new ResponseEntity<>(trashedRecords,HttpStatus.OK);
     }
 
 
-    @RequestMapping(value = "/{id}/tag", method = RequestMethod.POST)
+    @RequestMapping(value = "/{id}/tags", method = RequestMethod.POST)
     public ResponseEntity<?> tagRecord(@PathVariable Long id, @RequestBody String tagsJson){
         DocumentContext jsonContext = JsonPath.parse(tagsJson);
         String jsonTagsPath = "$.tags";
@@ -214,23 +215,41 @@ public class FileController {
         return new ResponseEntity<Object>(record,HttpStatus.OK);
     }
 
-    @RequestMapping(value = "/{id}/{tag}", method = RequestMethod.DELETE)
-    public ResponseEntity<?> deleteTag(@PathVariable Long id, @PathVariable String tag){
-        Record record = recordService.getRecord(id);
+    @RequestMapping(value = "/{id}/tags", method = RequestMethod.DELETE)
+    public ResponseEntity<?> deleteTag(@PathVariable Long id, @RequestBody String tagsJson){
+        Record record = recordService.getUntrashedRecord(id);
+        DocumentContext jsonContext = JsonPath.parse(tagsJson);
+        String jsonTagsPath = "$.tag";
+        String tag = jsonContext.read(jsonTagsPath);
         Tag tagEntity = tagRepository.findByRecordAndTag(record,tag);
         if(tagEntity==null){
             throw new TagNotFoundException("Tag not found");
         }
         tagRepository.delete(tagEntity);
-        record = recordService.getRecord(id);
+        record = recordService.getUntrashedRecord(id);
         return new ResponseEntity<Object>(record,HttpStatus.OK);
     }
 
-    @RequestMapping(value = "/tags/{tag}",method = RequestMethod.GET)
+    @RequestMapping(value = "/list/{tag}",method = RequestMethod.GET)
     public ResponseEntity<?> getRecordsByTag(@PathVariable String tag){
         List<Record> records = tagService.findRecordsByTag(tag);
         return new ResponseEntity<Object>(records,HttpStatus.OK);
     }
+
+    @RequestMapping(value = "/list",method = RequestMethod.GET)
+    public ResponseEntity<?> getAllRecords(){
+        List<Record> records = recordService.getAllRecords();
+        return new ResponseEntity<Object>(records,HttpStatus.OK);
+    }
+
+    @RequestMapping(value = "/empty_trash", method = RequestMethod.POST)
+    public ResponseEntity<?> emptyTrash(){
+        Long deletedCount = recordService.emptyTrash();
+        Map<String,Long> response = new HashMap<>();
+        response.put("DeletedCount",deletedCount);
+        return new ResponseEntity<Object>(response, HttpStatus.OK);
+    }
+
 
 
 }

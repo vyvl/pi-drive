@@ -13,12 +13,15 @@ import javax.persistence.*;
 public class SharedRecord {
     @Id
     @GeneratedValue
+    @Column(name="Share_ID")
     private long id;
 
     @ManyToOne
+    @JoinColumn(name = "USER_ID", referencedColumnName = "USER_ID")
     private User user;
 
     @ManyToOne
+    @JoinColumn(name = "RECORD_ID", referencedColumnName = "RECORD_ID")
     private Record record;
 
     private int permission;

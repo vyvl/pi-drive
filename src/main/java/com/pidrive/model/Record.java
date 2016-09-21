@@ -1,13 +1,12 @@
 package com.pidrive.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.*;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.pidrive.exception.RecordNotFoundException;
+import com.pidrive.model.Serializer.RecordSerializer;
 import com.pidrive.service.RecordService;
 import org.hibernate.annotations.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -154,39 +153,3 @@ class RecordDeserializer extends JsonDeserializer<Record> {
     }
 }
 
-class RecordSerializer extends JsonSerializer<Record>{
-
-    @Override
-    public void serialize(Record record, JsonGenerator jsonGenerator, SerializerProvider serializers) throws IOException {
-        jsonGenerator.writeStartObject();
-        jsonGenerator.writeNumberField("id",record.getId());
-        jsonGenerator.writeStringField("name",record.getName());
-        jsonGenerator.writeBooleanField("folder",record.isFolder());
-        jsonGenerator.writeBooleanField("trashed",record.isTrashed());
-        int children =0;
-        if(record.getChildren()!=null){
-            children = record.getChildren().size();
-        }
-        jsonGenerator.writeNumberField("children",children);
-        if(record.getParent()==null){
-            jsonGenerator.writeObjectField("parent",null);
-        }
-        else {
-            jsonGenerator.writeNumberField("parent",record.getParent().getId());
-        }
-        if(record.getTags()!=null){
-            jsonGenerator.writeFieldName("tags");
-            jsonGenerator.writeStartArray();
-            Set<Tag> tags = record.getTags();
-            tags.stream().map(tag -> (tag.getTag())).forEach(s -> {
-                try {
-                    jsonGenerator.writeString(s);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            });
-            jsonGenerator.writeEndArray();
-        }
-        jsonGenerator.writeEndObject();
-    }
-}

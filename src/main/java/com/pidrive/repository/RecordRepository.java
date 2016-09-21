@@ -16,4 +16,6 @@ public interface RecordRepository extends JpaRepository<Record,Long>{
 
     public List<Record> findByIsTrashed(boolean isTrashed);
 
+    public Long removeByIsTrashed(boolean isTrashed);
+
 }
