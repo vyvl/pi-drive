@@ -178,9 +178,12 @@ public class RecordService {
                 tag.setRecord(record);
                 tag.setTag(tags.get(i));
                 tagRepository.saveAndFlush(tag);
+                tagsSet.add(tag);
             }
         }
-        record = this.getUntrashedRecord(id);
+        record.setTags(tagsSet);
+
+        record = this.saveRecord(record);
         return record;
     }
 

@@ -70,14 +70,14 @@ public class FileController {
             throw new IllegalTypeException("Folder Expected, Got File");
         }
         List<Record> children = record.getChildren();
-        List<Record> unTrashedChildren = new ArrayList<>();
-        for (int i = 0; i < children.size(); i++) {
-            Record child = children.get(i);
-            if(!child.isTrashed()){
-                unTrashedChildren.add(child);
-            }
-        }
-        return new ResponseEntity<Object>(unTrashedChildren,HttpStatus.OK);
+//        List<Record> unTrashedChildren = new ArrayList<>();
+//        for (int i = 0; i < children.size(); i++) {
+//            Record child = children.get(i);
+//            if(!child.isTrashed()){
+//                unTrashedChildren.add(child);
+//            }
+//        }
+        return new ResponseEntity<Object>(children,HttpStatus.OK);
     }
 
     @RequestMapping(value = "/{id}/content", method = RequestMethod.POST)
@@ -160,7 +160,7 @@ public class FileController {
 
     @RequestMapping(value = "/{id}/rename", method = RequestMethod.POST)
     public ResponseEntity<?> renameRecord(@PathVariable Long id, @RequestBody String jsonBody) {
-        Record record = recordService.getUntrashedRecord(id);
+        Record record = recordService.getRecord(id);
         JsonNode node = null;
         try {
             node = new ObjectMapper().readValue(jsonBody,JsonNode.class);
