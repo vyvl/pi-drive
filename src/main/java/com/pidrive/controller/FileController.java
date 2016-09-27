@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jayway.jsonpath.DocumentContext;
 import com.jayway.jsonpath.JsonPath;
 import com.pidrive.exception.IllegalTypeException;
+import com.pidrive.exception.RecordNotFoundException;
 import com.pidrive.exception.TagNotFoundException;
 import com.pidrive.model.FileContent;
 import com.pidrive.model.Record;
@@ -15,6 +16,9 @@ import com.pidrive.repository.TagRepository;
 import com.pidrive.service.RecordService;
 import com.pidrive.service.TagService;
 import com.sun.javaws.jnl.LibraryDesc;
+import com.sun.xml.internal.ws.api.message.ExceptionHasMessage;
+import com.sun.xml.internal.ws.api.message.Packet;
+import com.sun.xml.internal.ws.model.RuntimeModelerException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
@@ -87,6 +91,30 @@ public class FileController {
         return resp;
     }
 
+    @RequestMapping(value = "/add_file", method = RequestMethod.POST)
+    public ResponseEntity<?> addFile(@RequestParam MultipartFile file,@RequestParam Long parentId){
+        String name = file.getOriginalFilename();
+        boolean folder = false;
+        Record parent = null;
+        try {
+            parent = recordService.getRecord(parentId);
+        }
+        catch (RuntimeException e){
+            parent = null;
+        }
+
+        Record record = new Record();
+        record.setName(name);
+        if(parent!=null) {
+            record.setParent(parent);
+        }
+        record.setFolder(false);
+        record = recordService.saveRecord(record);
+        record = recordService.setContent(record.getId(),file);
+        ResponseEntity<?> resp = new ResponseEntity<>(record,HttpStatus.OK);
+        return resp;
+    }
+
     @RequestMapping(value = "/{id}/content", method = RequestMethod.GET)
     public ResponseEntity<Resource> downloadFile(@PathVariable Long id){
         Record record = recordService.getUntrashedRecord(id);
@@ -94,7 +122,13 @@ public class FileController {
             throw new IllegalTypeException("File Expected, Got Folder");
         }
         FileContent content = record.getContent();
-        ByteArrayResource byteArrayResource = new ByteArrayResource(content.getContent());
+        ByteArrayResource byteArrayResource = null;
+        try {
+            byteArrayResource = new ByteArrayResource(content.getContent());
+        }
+        catch (Exception e){
+            throw new RecordNotFoundException("File Content not found");
+        }
         HttpHeaders header = new HttpHeaders();
         header.set("Content-Disposition",
                 "attachment; filename=" + record.getName());
@@ -139,16 +173,29 @@ public class FileController {
     }
 
     @RequestMapping(value = "/{id}/copy", method = RequestMethod.POST, consumes = "application/json")
-    public Record copyRecord(@PathVariable long id,@RequestBody long newParentId){
-
+    public Record copyRecord(@PathVariable long id, @RequestBody String newParent){
+        JsonNode node = null;
+        try {
+            node = new ObjectMapper().readValue(newParent,JsonNode.class);
+        } catch (IOException e) {
+            throw new IllegalTypeException("Response body in in not proper json format");
+        }
+        if(node.get("newParent")==null){
+            throw new IllegalTypeException("Response body in in not proper json format");
+        }
+        Record parent = recordService.getRecord(node.get("newParent").asLong());
+        if(!parent.isFolder()){
+            throw new IllegalStateException("Cant move a record into a file. Expected Folder. Got File");
+        }
         Record newRecord = new Record();
         Record record = recordService.getRecord(id);
         newRecord.setName(record.getName());
-        newRecord.setParent(recordService.getUntrashedFolder(newParentId));
+        newRecord.setParent(parent);
         newRecord = recordService.saveNewRecord(newRecord);
         FileContent copyContent = new FileContent();
         FileContent content = record.getContent();
-        copyContent.setContent(content.getContent());
+        byte[] contentData = content!=null ?content.getContent():new byte[0];
+        copyContent.setContent(contentData);
         copyContent.setRecord(newRecord);
         contentRepository.saveAndFlush(content);
         newRecord.setContent(copyContent);
