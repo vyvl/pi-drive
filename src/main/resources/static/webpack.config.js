@@ -1,5 +1,5 @@
 var config1 = {
-    entry: "./js/abc.jsx",
+    entry: "./js/root.tsx",
     output: {
         filename: "./dist/bundle.js",
     },
@@ -41,7 +41,7 @@ var config1 = {
 };
 
 var config2 = {
-    entry: "./js/abc.jsx",
+    entry: "./js/root.tsx",
     output: {
         filename: "../../../../target/classes/static/dist/bundle.js",
     },
