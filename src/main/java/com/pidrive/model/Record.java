@@ -57,6 +57,11 @@ public class Record {
     @JsonIgnore
     private Set<Tag> tags;
 
+    @OneToMany(mappedBy = "record")
+    @Cascade(org.hibernate.annotations.CascadeType.DELETE)
+    @JsonIgnore
+    private Set<SharedRecord> sharedRecords;
+
     public FileContent getContent() {
         return content;
     }

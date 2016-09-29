@@ -65,7 +65,7 @@
 	var uploadFile_1 = __webpack_require__(451);
 	var bar_1 = __webpack_require__(452);
 	var actionCreators = __webpack_require__(453);
-	var tagFilter_1 = __webpack_require__(459);
+	var tagFilter_1 = __webpack_require__(460);
 	var enhancers = redux_1.compose(redux_1.applyMiddleware(redux_thunk_1.default), window.devToolsExtension ? window.devToolsExtension() : function (f) { return f; });
 	var store = redux_1.createStore(reducers_1.reducers, enhancers);
 	store.dispatch(actionCreators.doFetch());
@@ -80,14 +80,14 @@
 	var Root = function (props) {
 	    return (React.createElement(react_bootstrap_1.Grid, null, 
 	        React.createElement(react_bootstrap_1.Row, null, 
-	            React.createElement(react_bootstrap_1.Table, null, 
+	            React.createElement(react_bootstrap_1.Table, {striped: true}, 
 	                React.createElement(tableHeadings_1.Heading, null), 
 	                React.createElement("tbody", null, props.children.map(function (child, index) {
 	                    return React.createElement(row_1.Folder, __assign({key: index}, child, props.actions));
 	                })))
 	        ), 
 	        React.createElement(react_bootstrap_1.Row, null, 
-	            React.createElement(bar_1.Navbar, {home: props.actions.doFetch, addRecord: props.actions.addRecord, addTag: props.actions.addTag, parent: props.parent, removeTag: props.actions.removeTag, upload: props.actions.fileUploadModal, paste: props.actions.paste, op: props.op})
+	            React.createElement(bar_1.Navbar, {home: props.actions.doFetch, addRecord: props.actions.addRecord, parent: props.parent, upload: props.actions.fileUploadModal, paste: props.actions.paste, op: props.op, getSharedRecords: props.actions.getSharedRecords})
 	        ), 
 	        React.createElement(react_bootstrap_1.Row, null, 
 	            React.createElement(tagFilter_1.TagSearch, {searchTag: props.actions.searchTag})
@@ -41851,18 +41851,19 @@
 	"use strict";
 	var React = __webpack_require__(1);
 	var react_bootstrap_1 = __webpack_require__(196);
+	var bootbox = __webpack_require__(459);
 	exports.Folder = function (props) { return (React.createElement("tr", null, 
-	    React.createElement("td", {onClick: function () { return props.renameRecord(props.id); }}, props.name), 
+	    React.createElement("td", {onClick: function () { bootbox.prompt("Enter new name", function (name) { name && props.renameRecord(props.id, name); }); }}, props.name), 
 	    React.createElement("td", {onClick: function () { return props.changeParent(props.id); }}, 
 	        "Children: ", 
 	        props.children), 
 	    React.createElement("td", null, props.folder ? "folder" : "file"), 
-	    React.createElement("td", {onClick: function () { return props.untrashRecord(props.id, props.trashed); }}, props.trashed ? "yes" : "no"), 
+	    React.createElement("td", {onClick: function () { return props.trashed && props.untrashRecord(props.id); }}, props.trashed ? "yes" : "no"), 
 	    React.createElement("td", null, 
 	        React.createElement("a", {href: "#", onClick: function (e) { props.deleteRecord(props.id, props.trashed); }}, "Delete")
 	    ), 
 	    React.createElement("td", null, 
-	        React.createElement(react_bootstrap_1.Button, {bsSize: "xsmall", onClick: function () { return props.addTag(props.id); }}, "Add Tag"), 
+	        React.createElement(react_bootstrap_1.Button, {bsSize: "xsmall", onClick: function () { bootbox.prompt("Enter new tag", function (tag) { tag && props.addTag(props.id, tag); }); }}, "Add Tag"), 
 	        React.createElement("ul", null, props.tags.sort().map(function (tag, index) { return React.createElement("li", {key: index}, 
 	            tag, 
 	            " ", 
@@ -41872,7 +41873,12 @@
 	        props.folder ? null : React.createElement(react_bootstrap_1.Button, {onClick: function () { props.copy(props.id); }}, "Copy"), 
 	        props.folder ? null : React.createElement("a", {href: "/files/" + props.id + "/content", target: '_blank'}, 
 	            " ", 
-	            React.createElement(react_bootstrap_1.Button, null, "Download"))))); };
+	            React.createElement(react_bootstrap_1.Button, null, "Download")), 
+	        React.createElement(react_bootstrap_1.Button, {onClick: function () {
+	            bootbox.prompt("Enter User Name", function (userName) {
+	                props.shareRecord(props.id, userName, 1);
+	            });
+	        }}, "Share")))); };
 
 
 /***/ },
@@ -42016,17 +42022,20 @@
 	"use strict";
 	var React = __webpack_require__(1);
 	var react_bootstrap_1 = __webpack_require__(196);
+	var bootbox = __webpack_require__(459);
 	exports.Navbar = function (props) {
 	    return (React.createElement(react_bootstrap_1.ButtonGroup, null, 
 	        React.createElement(react_bootstrap_1.Button, {onClick: function () {
 	            props.home();
 	        }}, "Return to Home"), 
 	        React.createElement(react_bootstrap_1.Button, {onClick: function () {
-	            var name = prompt('Enter name of folder');
-	            props.addRecord(name, props.parent, true);
+	            bootbox.prompt('Enter name of the folder', function (name) {
+	                name && props.addRecord(name, props.parent, true);
+	            });
 	        }}, " Add Folder "), 
 	        React.createElement(react_bootstrap_1.Button, {onClick: function () { props.upload(); }}, "Add File"), 
-	        React.createElement(react_bootstrap_1.Button, {onClick: function () { props.paste(props.op.id, props.parent, props.op.type); }}, "Paste")));
+	        React.createElement(react_bootstrap_1.Button, {onClick: function () { props.paste(props.op.id, props.parent, props.op.type); }}, "Paste"), 
+	        React.createElement(react_bootstrap_1.Button, {onClick: function () { props.getSharedRecords(); }}, "Shared Files")));
 	};
 
 
@@ -42036,6 +42045,7 @@
 
 	"use strict";
 	var ajax = __webpack_require__(454);
+	var bootbox = __webpack_require__(459);
 	function changeParent(parent) {
 	    return function (dispatch) { return ajax.get("files/" + parent + "/children").end(function (err, res) {
 	        if (!err && res) {
@@ -42076,24 +42086,38 @@
 	    }); };
 	}
 	exports.deleteRecord = deleteRecord;
-	function renameRecord(id) {
-	    var name = prompt("Enter new name");
-	    if (!name)
-	        return { type: "IGNORE" };
+	function renameRecord(id, name) {
 	    return function (dispatch) { return ajax.post("files/" + id + "/rename")
 	        .set('Content-Type', 'application/json')
 	        .send(JSON.stringify({ "newName": name })).end(function (err, res) { return updateChild(err, res, dispatch); }); };
 	}
 	exports.renameRecord = renameRecord;
-	function untrashRecord(id, trashed) {
-	    if (trashed) {
-	        return function (dispatch) { return ajax.post("files/" + id + "/untrash").end(function (err, res) { return updateChild(err, res, dispatch); }); };
-	    }
-	    return { type: 'IGNORE' };
+	function untrashRecord(id) {
+	    return function (dispatch) { return ajax.post("files/" + id + "/untrash").end(function (err, res) { return updateChild(err, res, dispatch); }); };
 	}
 	exports.untrashRecord = untrashRecord;
 	function doFetch(parent) {
-	    var path = 'list';
+	    var path = 'root';
+	    if (!parent)
+	        return function (dispatch) {
+	            ajax.get("/files/" + path).end(function (err, response) {
+	                var root = JSON.parse(response.text);
+	                var parent = root.id;
+	                ajax.get("/files/" + parent + "/children").end(function (err, response) {
+	                    if (!err && response) {
+	                        var children = JSON.parse(response.text);
+	                        dispatch({
+	                            type: 'CHANGE_PARENT',
+	                            parent: parent
+	                        });
+	                        dispatch({
+	                            type: 'FETCH_DONE',
+	                            children: children
+	                        });
+	                    }
+	                });
+	            });
+	        };
 	    if (parent) {
 	        path = parent + "/children";
 	    }
@@ -42119,10 +42143,7 @@
 	    return function (dispatch) { return ajax.post('/files').set('Content-Type', 'application/json').send(JSON.stringify(body)).end(function (err, res) { newChild(err, res, dispatch); }); };
 	}
 	exports.addRecord = addRecord;
-	function addTag(id) {
-	    var tag = prompt('Enter a new tag');
-	    if (!tag)
-	        return { type: 'IGNORE' };
+	function addTag(id, tag) {
 	    var body = { tags: [tag] };
 	    return function (dispatch) { return ajax.post("/files/" + id + "/tags").set('Content-Type', 'application/json').send(JSON.stringify(body)).end(function (err, res) { updateChild(err, res, dispatch); }); };
 	}
@@ -42201,6 +42222,38 @@
 	    };
 	}
 	exports.searchTag = searchTag;
+	function shareRecord(recordId, userName, permission) {
+	    if (permission === void 0) { permission = 1; }
+	    return function (dispatch) {
+	        ajax.post('shared/add')
+	            .set('Content-Type', 'application/json')
+	            .send(JSON.stringify({
+	            record_id: recordId,
+	            user_name: userName,
+	            permission: permission
+	        })).end(function (err, res) { bootbox.alert('Shared File Sucessfully'); });
+	    };
+	}
+	exports.shareRecord = shareRecord;
+	function getSharedRecords() {
+	    return function (dispatch) {
+	        ajax.get("shared/list/")
+	            .end(function (err, res) {
+	            if (!err && res) {
+	                var children = JSON.parse(res.text);
+	                dispatch({
+	                    type: 'CHANGE_PARENT',
+	                    parent: null
+	                });
+	                dispatch({
+	                    type: 'FETCH_DONE',
+	                    children: children
+	                });
+	            }
+	        });
+	    };
+	}
+	exports.getSharedRecords = getSharedRecords;
 	function newChild(err, res, dispatch) {
 	    if (!err && res) {
 	        var child = JSON.parse(res.text);
@@ -43822,6 +43875,12 @@
 
 /***/ },
 /* 459 */
+/***/ function(module, exports) {
+
+	module.exports = bootbox;
+
+/***/ },
+/* 460 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -43830,9 +43889,11 @@
 	exports.TagSearch = function (props) {
 	    var searchTag = "";
 	    var input = null;
-	    return (React.createElement("div", null, 
-	        React.createElement(react_bootstrap_1.FormControl, {type: "text", bsSize: "sm", placeholder: "search tag", onChange: function (e) { searchTag = e.target.value; input = e.target; }}), 
-	        React.createElement(react_bootstrap_1.Button, {onClick: function () { input.value = ""; searchTag !== "" && props.searchTag(searchTag); }}, "Search Tag")));
+	    return (React.createElement(react_bootstrap_1.Form, {inline: true}, 
+	        React.createElement(react_bootstrap_1.FormGroup, null, 
+	            React.createElement(react_bootstrap_1.FormControl, {type: "text", bsSize: "sm", placeholder: "search tag", onChange: function (e) { searchTag = e.target.value; input = e.target; }}), 
+	            React.createElement(react_bootstrap_1.Button, {onClick: function () { input && (input.value = ""); searchTag !== "" && props.searchTag(searchTag); }}, "Search Tag"))
+	    ));
 	};
 
 

@@ -10,15 +10,15 @@ import com.pidrive.exception.RecordNotFoundException;
 import com.pidrive.exception.TagNotFoundException;
 import com.pidrive.model.FileContent;
 import com.pidrive.model.Record;
+import com.pidrive.model.SharedRecord;
 import com.pidrive.model.Tag;
 import com.pidrive.repository.FileContentRepository;
 import com.pidrive.repository.TagRepository;
+import com.pidrive.security.IAuthenticationFacade;
 import com.pidrive.service.RecordService;
+import com.pidrive.service.SharedRecordService;
 import com.pidrive.service.TagService;
-import com.sun.javaws.jnl.LibraryDesc;
-import com.sun.xml.internal.ws.api.message.ExceptionHasMessage;
-import com.sun.xml.internal.ws.api.message.Packet;
-import com.sun.xml.internal.ws.model.RuntimeModelerException;
+import com.pidrive.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
@@ -30,7 +30,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -42,8 +41,12 @@ import java.util.Map;
 @RequestMapping("/files")
 public class FileController {
 
+
     @Autowired
     private RecordService recordService;
+
+    @Autowired
+    private UserService userService;
 
     @Autowired
     private FileContentRepository contentRepository;
@@ -54,10 +57,18 @@ public class FileController {
     @Autowired
     private TagService tagService;
 
+    @Autowired
+    private SharedRecordService sharedRecordService;
+
+    @Autowired
+    private IAuthenticationFacade authenticationFacade;
+
     @RequestMapping(method = RequestMethod.POST)
     @ResponseBody
     public ResponseEntity<?> createRecord(@RequestBody Record record){
         record = recordService.saveNewRecord(record);
+        String userName =authenticationFacade.getAuthentication().getName();
+        SharedRecord sharedRecord = sharedRecordService.createNewSharedRecord(userName,record,0);
         return  new ResponseEntity<>(record,HttpStatus.OK);
     }
 
@@ -111,6 +122,8 @@ public class FileController {
         record.setFolder(false);
         record = recordService.saveRecord(record);
         record = recordService.setContent(record.getId(),file);
+        String userName =authenticationFacade.getAuthentication().getName();
+        SharedRecord sharedRecord = sharedRecordService.createNewSharedRecord(userName,record,0);
         ResponseEntity<?> resp = new ResponseEntity<>(record,HttpStatus.OK);
         return resp;
     }
@@ -289,6 +302,13 @@ public class FileController {
         return new ResponseEntity<Object>(records,HttpStatus.OK);
     }
 
+    @RequestMapping(value = "/root",method = RequestMethod.GET)
+    public ResponseEntity<?> getRootRecords(){
+        Record root = getCurrentUser().getRoot();
+        //List<Record> records = root.getChildren();
+        return new ResponseEntity<Object>(root,HttpStatus.OK);
+    }
+
     @RequestMapping(value = "/empty_trash", method = RequestMethod.POST)
     public ResponseEntity<?> emptyTrash(){
         Long deletedCount = recordService.emptyTrash();
@@ -297,6 +317,14 @@ public class FileController {
         return new ResponseEntity<Object>(response, HttpStatus.OK);
     }
 
+    private String getUsername(){
+        return authenticationFacade.getAuthentication().getName();
+    }
+
+    private com.pidrive.model.User getCurrentUser(){
+        String userName = getUsername();
+        return userService.findUser(userName);
+    }
 
 
 }
