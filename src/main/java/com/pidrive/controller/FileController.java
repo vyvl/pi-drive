@@ -30,6 +30,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.net.URLEncoder;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -144,7 +145,7 @@ public class FileController {
         }
         HttpHeaders header = new HttpHeaders();
         header.set("Content-Disposition",
-                "attachment; filename=" + record.getName());
+                "attachment; filename=\"" + record.getName()+"\"");
         return ResponseEntity.ok()
                 .contentType(MediaType.parseMediaType("application/octet-stream"))
                 .headers(header)

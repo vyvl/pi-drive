@@ -4,7 +4,7 @@ import { createStore, applyMiddleware, compose, bindActionCreators } from 'redux
 import { Provider, connect } from 'react-redux';
 import thunkMiddleware from 'redux-thunk';
 import * as ajax from 'superagent';
-import { Table, Grid, Row } from 'react-bootstrap';
+import { Table, Grid, Row, Button, PageHeader } from 'react-bootstrap';
 import { Folder } from './row';
 import { Heading } from './tableHeadings';
 import { IRecord } from './interfaces/IRecord';
@@ -38,6 +38,7 @@ const mapDispatchToProps = (dispatch:Redux.Dispatch<any>) => {
 const Root = (props: { children: IRecord[], actions: typeof actionCreators, parent: number }) => {
     return (
         <Grid>
+            <PageHeader><small>PI-Drive</small></PageHeader>
             <Row>
                 <Table striped={true}>
                     <Heading />
@@ -56,6 +57,9 @@ const Root = (props: { children: IRecord[], actions: typeof actionCreators, pare
                 <TagSearch searchTag={props.actions.searchTag}></TagSearch>
             </Row>
             <UploadModal show={props.modals.upload} hide={props.actions.closeFileUploadModal} uploadFile={props.actions.uploadFile} parent={props.parent}></UploadModal>
+            <form action="/logout" method="post">
+            <Button type="submit" value="Sign Out">Sign Out</Button>
+        </form>
         </Grid>
     );
 }

@@ -60,11 +60,11 @@
 	var redux_thunk_1 = __webpack_require__(195);
 	var react_bootstrap_1 = __webpack_require__(196);
 	var row_1 = __webpack_require__(448);
-	var tableHeadings_1 = __webpack_require__(449);
-	var reducers_1 = __webpack_require__(450);
-	var uploadFile_1 = __webpack_require__(451);
-	var bar_1 = __webpack_require__(452);
-	var actionCreators = __webpack_require__(453);
+	var tableHeadings_1 = __webpack_require__(450);
+	var reducers_1 = __webpack_require__(451);
+	var uploadFile_1 = __webpack_require__(452);
+	var bar_1 = __webpack_require__(453);
+	var actionCreators = __webpack_require__(454);
 	var tagFilter_1 = __webpack_require__(460);
 	var enhancers = redux_1.compose(redux_1.applyMiddleware(redux_thunk_1.default), window.devToolsExtension ? window.devToolsExtension() : function (f) { return f; });
 	var store = redux_1.createStore(reducers_1.reducers, enhancers);
@@ -79,6 +79,9 @@
 	};
 	var Root = function (props) {
 	    return (React.createElement(react_bootstrap_1.Grid, null, 
+	        React.createElement(react_bootstrap_1.PageHeader, null, 
+	            React.createElement("small", null, "PI-Drive")
+	        ), 
 	        React.createElement(react_bootstrap_1.Row, null, 
 	            React.createElement(react_bootstrap_1.Table, {striped: true}, 
 	                React.createElement(tableHeadings_1.Heading, null), 
@@ -92,7 +95,10 @@
 	        React.createElement(react_bootstrap_1.Row, null, 
 	            React.createElement(tagFilter_1.TagSearch, {searchTag: props.actions.searchTag})
 	        ), 
-	        React.createElement(uploadFile_1.UploadModal, {show: props.modals.upload, hide: props.actions.closeFileUploadModal, uploadFile: props.actions.uploadFile, parent: props.parent})));
+	        React.createElement(uploadFile_1.UploadModal, {show: props.modals.upload, hide: props.actions.closeFileUploadModal, uploadFile: props.actions.uploadFile, parent: props.parent}), 
+	        React.createElement("form", {action: "/logout", method: "post"}, 
+	            React.createElement(react_bootstrap_1.Button, {type: "submit", value: "Sign Out"}, "Sign Out")
+	        )));
 	};
 	var App = react_redux_1.connect(mapStateToProps, mapDispatchToProps)(Root);
 	var render = function () {
@@ -41851,38 +41857,95 @@
 	"use strict";
 	var React = __webpack_require__(1);
 	var react_bootstrap_1 = __webpack_require__(196);
-	var bootbox = __webpack_require__(459);
-	exports.Folder = function (props) { return (React.createElement("tr", null, 
-	    React.createElement("td", {onClick: function () { bootbox.prompt("Enter new name", function (name) { name && props.renameRecord(props.id, name); }); }}, props.name), 
-	    React.createElement("td", {onClick: function () { return props.changeParent(props.id); }}, 
-	        "Children: ", 
-	        props.children), 
-	    React.createElement("td", null, props.folder ? "folder" : "file"), 
-	    React.createElement("td", {onClick: function () { return props.trashed && props.untrashRecord(props.id); }}, props.trashed ? "yes" : "no"), 
-	    React.createElement("td", null, 
-	        React.createElement("a", {href: "#", onClick: function (e) { props.deleteRecord(props.id, props.trashed); }}, "Delete")
-	    ), 
-	    React.createElement("td", null, 
-	        React.createElement(react_bootstrap_1.Button, {bsSize: "xsmall", onClick: function () { bootbox.prompt("Enter new tag", function (tag) { tag && props.addTag(props.id, tag); }); }}, "Add Tag"), 
-	        React.createElement("ul", null, props.tags.sort().map(function (tag, index) { return React.createElement("li", {key: index}, 
+	var bootbox = __webpack_require__(449);
+	exports.Folder = function (props) {
+	    function rename(id) {
+	        bootbox.prompt("Enter new name", function (name) { name && props.renameRecord(id, name); });
+	    }
+	    function addTag(id) {
+	        bootbox.prompt("Enter new tag", function (tag) { tag && props.addTag(id, tag); });
+	    }
+	    function shareRecord(id) {
+	        bootbox.prompt("Enter User Name", function (userName) {
+	            props.shareRecord(id, userName, 1);
+	        });
+	    }
+	    if (!props.folder) {
+	        return (React.createElement(FileRow, {name: props.name, id: props.id, rename: rename, trashed: props.trashed, untrashRecord: props.untrashRecord, deleteRecord: props.deleteRecord, addTag: addTag, tags: props.tags, removeTag: props.removeTag, shareRecord: shareRecord, copy: props.copy, move: props.move}));
+	    }
+	    else {
+	        return (React.createElement(FolderRow, {name: props.name, id: props.id, rename: rename, children: props.children, trashed: props.trashed, untrashRecord: props.untrashRecord, deleteRecord: props.deleteRecord, addTag: addTag, tags: props.tags, removeTag: props.removeTag, shareRecord: shareRecord, move: props.move, changeParent: props.changeParent}));
+	    }
+	};
+	var FileRow = function (props) {
+	    var tags = React.createElement("ul", null, 
+	        "  ", 
+	        props.tags.sort().map(function (tag, i) { return React.createElement("li", {key: i}, 
 	            tag, 
 	            " ", 
-	            React.createElement(react_bootstrap_1.Button, {bsSize: "xsmall", onClick: function () { props.removeTag(props.id, tag); }}, "-")); }))), 
-	    React.createElement("td", null, 
-	        React.createElement(react_bootstrap_1.Button, {onClick: function () { props.move(props.id); }}, "Move"), 
-	        props.folder ? null : React.createElement(react_bootstrap_1.Button, {onClick: function () { props.copy(props.id); }}, "Copy"), 
-	        props.folder ? null : React.createElement("a", {href: "/files/" + props.id + "/content", target: '_blank'}, 
+	            React.createElement(react_bootstrap_1.Glyphicon, {glyph: "minus", onClick: function () { props.removeTag(props.id, tag); }})); }), 
+	        "  ");
+	    return (React.createElement("tr", null, 
+	        React.createElement("td", null, 
+	            React.createElement(react_bootstrap_1.Glyphicon, {glyph: "file"}), 
+	            props.name), 
+	        React.createElement("td", null, "Children: 0"), 
+	        React.createElement("td", {onClick: function () { return props.trashed && props.untrashRecord(props.id); }}, props.trashed ? "yes" : "no"), 
+	        React.createElement("td", null, tags), 
+	        React.createElement("td", null, 
+	            React.createElement(react_bootstrap_1.ButtonGroup, null, 
+	                React.createElement(react_bootstrap_1.Button, {bsSize: "xsmall", onClick: function () { props.move(props.id); }}, "Move"), 
+	                React.createElement(react_bootstrap_1.Button, {bsSize: "xsmall", onClick: function () { props.shareRecord(props.id); }}, "Share"), 
+	                React.createElement(react_bootstrap_1.Button, {bsSize: "xsmall", onClick: function () { return props.rename(props.id); }}, "Rename"), 
+	                React.createElement("a", {href: "/files/" + props.id + "/content", target: '_blank'}, 
+	                    " ", 
+	                    React.createElement(react_bootstrap_1.Button, {bsSize: "xsmall"}, "Download")), 
+	                React.createElement(react_bootstrap_1.Button, {bsSize: "xsmall", onClick: function () { props.copy(props.id); }}, "Copy"), 
+	                React.createElement(react_bootstrap_1.Button, {bsSize: "xsmall", onClick: function (e) { props.deleteRecord(props.id, props.trashed); }}, "Delete"), 
+	                React.createElement(react_bootstrap_1.Button, {bsSize: "xsmall", onClick: function () { props.addTag(props.id); }}, 
+	                    React.createElement(react_bootstrap_1.Glyphicon, {glyph: "plus"}), 
+	                    " Add Tag"))
+	        )));
+	};
+	var FolderRow = function (props) {
+	    var tags = React.createElement("ul", null, 
+	        "  ", 
+	        props.tags.sort().map(function (tag, i) { return React.createElement("li", {key: i}, 
+	            tag, 
 	            " ", 
-	            React.createElement(react_bootstrap_1.Button, null, "Download")), 
-	        React.createElement(react_bootstrap_1.Button, {onClick: function () {
-	            bootbox.prompt("Enter User Name", function (userName) {
-	                props.shareRecord(props.id, userName, 1);
-	            });
-	        }}, "Share")))); };
+	            React.createElement(react_bootstrap_1.Glyphicon, {glyph: "minus", onClick: function () { props.removeTag(props.id, tag); }})); }), 
+	        "  ");
+	    return (React.createElement("tr", null, 
+	        React.createElement("td", null, 
+	            React.createElement(react_bootstrap_1.Glyphicon, {glyph: "folder-close"}), 
+	            React.createElement("label", null, props.name)), 
+	        React.createElement("td", null, 
+	            "Children: ", 
+	            props.children), 
+	        React.createElement("td", {onClick: function () { return props.trashed && props.untrashRecord(props.id); }}, props.trashed ? "yes" : "no"), 
+	        React.createElement("td", null, tags), 
+	        React.createElement("td", null, 
+	            React.createElement(react_bootstrap_1.ButtonGroup, null, 
+	                React.createElement(react_bootstrap_1.Button, {bsSize: "xsmall", onClick: function () { props.move(props.id); }}, "Move"), 
+	                React.createElement(react_bootstrap_1.Button, {bsSize: "xsmall", onClick: function () { props.shareRecord(props.id); }}, "Share"), 
+	                React.createElement(react_bootstrap_1.Button, {bsSize: "xsmall", onClick: function () { return props.rename(props.id); }}, "Rename"), 
+	                React.createElement(react_bootstrap_1.Button, {bsSize: "xsmall", onClick: function () { return props.changeParent(props.id); }}, "Open"), 
+	                React.createElement(react_bootstrap_1.Button, {bsSize: "xsmall", onClick: function (e) { props.deleteRecord(props.id, props.trashed); }}, "Delete"), 
+	                React.createElement(react_bootstrap_1.Button, {bsSize: "xsmall", onClick: function () { props.addTag(props.id); }}, 
+	                    React.createElement(react_bootstrap_1.Glyphicon, {glyph: "plus"}), 
+	                    " Add Tag"))
+	        )));
+	};
 
 
 /***/ },
 /* 449 */
+/***/ function(module, exports) {
+
+	module.exports = bootbox;
+
+/***/ },
+/* 450 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -41891,16 +41954,14 @@
 	    React.createElement("tr", null, 
 	        React.createElement("th", null, "Name"), 
 	        React.createElement("th", null, "Children"), 
-	        React.createElement("th", null, "Type"), 
 	        React.createElement("th", null, "Trashed"), 
-	        React.createElement("th", null, "Delete"), 
 	        React.createElement("th", null, "Tags"), 
 	        React.createElement("th", null, "Ops"))
 	)); };
 
 
 /***/ },
-/* 450 */
+/* 451 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -41996,7 +42057,7 @@
 
 
 /***/ },
-/* 451 */
+/* 452 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -42016,13 +42077,13 @@
 
 
 /***/ },
-/* 452 */
+/* 453 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
 	var React = __webpack_require__(1);
 	var react_bootstrap_1 = __webpack_require__(196);
-	var bootbox = __webpack_require__(459);
+	var bootbox = __webpack_require__(449);
 	exports.Navbar = function (props) {
 	    return (React.createElement(react_bootstrap_1.ButtonGroup, null, 
 	        React.createElement(react_bootstrap_1.Button, {onClick: function () {
@@ -42040,12 +42101,12 @@
 
 
 /***/ },
-/* 453 */
+/* 454 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
-	var ajax = __webpack_require__(454);
-	var bootbox = __webpack_require__(459);
+	var ajax = __webpack_require__(455);
+	var bootbox = __webpack_require__(449);
 	function changeParent(parent) {
 	    return function (dispatch) { return ajax.get("files/" + parent + "/children").end(function (err, res) {
 	        if (!err && res) {
@@ -42288,7 +42349,7 @@
 
 
 /***/ },
-/* 454 */
+/* 455 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
@@ -42305,9 +42366,9 @@
 	  root = this;
 	}
 	
-	var Emitter = __webpack_require__(455);
-	var requestBase = __webpack_require__(456);
-	var isObject = __webpack_require__(457);
+	var Emitter = __webpack_require__(456);
+	var requestBase = __webpack_require__(457);
+	var isObject = __webpack_require__(458);
 	
 	/**
 	 * Noop.
@@ -42319,7 +42380,7 @@
 	 * Expose `request`.
 	 */
 	
-	var request = module.exports = __webpack_require__(458).bind(null, Request);
+	var request = module.exports = __webpack_require__(459).bind(null, Request);
 	
 	/**
 	 * Determine XHR.
@@ -43270,7 +43331,7 @@
 
 
 /***/ },
-/* 455 */
+/* 456 */
 /***/ function(module, exports, __webpack_require__) {
 
 	
@@ -43439,13 +43500,13 @@
 
 
 /***/ },
-/* 456 */
+/* 457 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/**
 	 * Module of mixed-in functions shared between node and client code
 	 */
-	var isObject = __webpack_require__(457);
+	var isObject = __webpack_require__(458);
 	
 	/**
 	 * Clear previous timeout.
@@ -43817,7 +43878,7 @@
 
 
 /***/ },
-/* 457 */
+/* 458 */
 /***/ function(module, exports) {
 
 	/**
@@ -43836,7 +43897,7 @@
 
 
 /***/ },
-/* 458 */
+/* 459 */
 /***/ function(module, exports) {
 
 	// The node and browser modules expose versions of this with the
@@ -43872,12 +43933,6 @@
 	
 	module.exports = request;
 
-
-/***/ },
-/* 459 */
-/***/ function(module, exports) {
-
-	module.exports = bootbox;
 
 /***/ },
 /* 460 */

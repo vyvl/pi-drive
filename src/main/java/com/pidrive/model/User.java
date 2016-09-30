@@ -15,6 +15,7 @@ public class User{
     @Column(name = "USER_ID")
     private long id;
 
+    @Column(unique = true)
     private String username;
     @JsonIgnore
     private String password;
