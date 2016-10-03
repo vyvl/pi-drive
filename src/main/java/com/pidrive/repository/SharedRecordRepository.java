@@ -1,5 +1,6 @@
 package com.pidrive.repository;
 
+import com.pidrive.model.Record;
 import com.pidrive.model.SharedRecord;
 import com.pidrive.model.User;
 import org.springframework.boot.autoconfigure.integration.IntegrationAutoConfiguration;
@@ -17,4 +18,6 @@ import java.util.List;
 public interface SharedRecordRepository extends JpaRepository<SharedRecord,Long> {
     public List<SharedRecord> findByUser(User user);
     public List<SharedRecord> findByUserAndPermissionIn(User user,List<Integer> Permission);
+    public List<SharedRecord> findByUserAndRecordIsTrashed(User user, boolean isTrashed);
+    public List<SharedRecord> findByUserAndRecordIn(User user, List<Record> records);
 }

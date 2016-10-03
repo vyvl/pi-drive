@@ -1,7 +1,9 @@
 package com.pidrive.service;
 
 import com.pidrive.model.Record;
+import com.pidrive.model.SharedRecord;
 import com.pidrive.model.Tag;
+import com.pidrive.model.User;
 import com.pidrive.repository.TagRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
@@ -19,9 +21,15 @@ public class TagService {
     @Autowired
     private TagRepository tagRepository;
 
-    public List<Record> findRecordsByTag(String tag){
+    @Autowired
+    private SharedRecordService sharedRecordService;
+
+    public List<Record> findRecordsByTag(User user, String tag){
         List<Tag> tags = tagRepository.findByTag(tag);
         List<Record> records = tags.stream().map(tag1 -> (tag1.getRecord())).collect(Collectors.toList());
+        records = sharedRecordService.filterRecordsForUser(user,records);
         return records;
     }
+
+
 }

@@ -3,56 +3,11 @@ import { IRecord } from './interfaces/IRecord';
 import { Button, ButtonGroup,Glyphicon } from 'react-bootstrap';
 import { ShareRecordModal } from './shareRecord';
 import * as bootbox from 'bootbox';
+import { IProps,IFileProps,IFolderProps } from './interfaces/RowInterfaces';
 
 
-
-interface IProps {
-    id: number;
-    name: string;
-    folder: Boolean;
-    trashed: Boolean;
-    children: number;
-    tags: string[];
-    changeParent(id: Number): void;
-    deleteRecord(id: Number, trashed: Boolean): void;
-    renameRecord(id: Number, newName: String): void;
-    untrashRecord(id: number): void;
-    addTag(id: Number, tag: String): void;
-    removeTag(id: Number, tag: String): void;
-    shareRecord(id: Number, userName: String, permission: Number): void;
-    copy(id: Number): void;
-    move(id: Number): void;
-}
-
-interface IFileProps {
-    name:string
-    id: Number;
-    rename(id: Number): void;
-    trashed: Boolean;
-    untrashRecord(id: Number): void;
-    deleteRecord(id: Number, trashed: Boolean): void;
-    addTag(id: Number): void;
-    tags: String[];
-    removeTag(id: Number, tag: String): void;
-    copy(id: Number): void;
-    move(id: Number): void;
-    shareRecord(id: Number): void;
-}
-
-interface IFolderProps {
-    name:string
-    id: Number;
-    rename(id: Number): void;
-    children: Number;
-    trashed: Boolean;
-    untrashRecord(id: Number): void;
-    deleteRecord(id: Number, trashed: Boolean): void;
-    addTag(id: Number): void;
-    tags: String[];
-    removeTag(id: Number, tag: String): void;
-    move(id: Number): void;
-    shareRecord(id: Number): void;
-    changeParent(id: Number): void;
+const style = {
+    
 }
 
 export const Folder = (props: IProps) => {
@@ -92,7 +47,8 @@ export const Folder = (props: IProps) => {
 };
 
 const FileRow = (props: IFileProps) => {
-    let tags = <ul>  {props.tags.sort().map((tag, i) => {return <li key={i}>{tag} <Glyphicon glyph={"minus"} onClick={() => { props.removeTag(props.id, tag) } }></Glyphicon></li> })}  </ul>
+    let tags = <ul>  {props.tags.sort().map((tag, i) => { return <li key={i}>{tag} <Glyphicon glyph={"minus"} onClick={() => { props.removeTag(props.id, tag) } }></Glyphicon></li> })}  </ul>
+    let untrashButton = props.trashed ? <Button bsSize="xsmall" onClick={() => { props.untrashRecord(props.id) } } disabled={!props.trashed}><Glyphicon glyph={"check"} />Untrash</Button> : null;
     return (
         <tr>
             <td>
@@ -100,19 +56,20 @@ const FileRow = (props: IFileProps) => {
                 {props.name}
             </td>
             <td >Children: 0</td>
-            <td onClick={() => props.trashed && props.untrashRecord(props.id)}>{props.trashed ? "yes" : "no"}</td>
+            <td>{props.trashed ? "yes" : "no"}</td>
             <td>
                 {tags}                
             </td>
             <td>
                 <ButtonGroup>
-                    <Button bsSize="xsmall" onClick={() => { props.move(props.id) } }>Move</Button>                                      
-                    <Button bsSize="xsmall" onClick={() => { props.shareRecord(props.id) } }>Share</Button>
-                    <Button bsSize="xsmall" onClick={() => props.rename(props.id)}>Rename</Button>
-                    <a href={`/files/${props.id}/content`} target={'_blank'}> <Button bsSize="xsmall" >Download</Button></a>
-                    <Button bsSize="xsmall" onClick={() => { props.copy(props.id) } }>Copy</Button>
-                    <Button bsSize="xsmall" onClick={(e) => { props.deleteRecord(props.id, props.trashed) } }>Delete</Button>
-                    <Button bsSize="xsmall" onClick={() => { props.addTag(props.id) } }><Glyphicon glyph={"plus"}/> Add Tag</Button>
+                    <Button bsSize="xsmall" onClick={() => { window.open(`/files/${props.id}/content`); } }><Glyphicon glyph={"download-alt"}/>Download</Button>
+                    <Button bsSize="xsmall" onClick={() => { props.move(props.id) } }><Glyphicon glyph={"move"}/>Move</Button>                                      
+                    <Button bsSize="xsmall" onClick={() => { props.shareRecord(props.id) } }><Glyphicon glyph={"share-alt"}/>Share</Button>
+                    <Button bsSize="xsmall" onClick={() => props.rename(props.id)}><Glyphicon glyph={"edit"}/>Rename</Button>                   
+                    <Button bsSize="xsmall" onClick={() => { props.copy(props.id) } }><Glyphicon glyph={"duplicate"}/>Copy</Button>
+                    <Button bsSize="xsmall" onClick={(e) => { props.deleteRecord(props.id, props.trashed) } }><Glyphicon glyph={"trash"}/>Delete</Button>
+                    <Button bsSize="xsmall" onClick={() => { props.addTag(props.id) } }><Glyphicon glyph={"plus"} /> Add Tag</Button>
+                    {untrashButton}
                 </ButtonGroup>
 
             </td>
@@ -123,6 +80,8 @@ const FileRow = (props: IFileProps) => {
 
 const FolderRow = (props: IFolderProps) => {
     let tags = <ul>  {props.tags.sort().map((tag, i) => { return <li key={i}>{tag} <Glyphicon glyph={"minus"} onClick={() => { props.removeTag(props.id, tag) } }></Glyphicon></li> })}  </ul>
+    let untrashButton = props.trashed ? <Button bsSize="xsmall" onClick={() => { props.untrashRecord(props.id) } } disabled={!props.trashed}><Glyphicon glyph={"check"} />Untrash</Button> : null;
+    
     return (
         <tr>
             <td>
@@ -132,18 +91,19 @@ const FolderRow = (props: IFolderProps) => {
                 </label>    
             </td>
             <td >Children: {props.children}</td>
-            <td onClick={() => props.trashed && props.untrashRecord(props.id)}>{props.trashed ? "yes" : "no"}</td>
+            <td>{props.trashed ? "yes" : "no"}</td>
             <td>
                 {tags}
             </td>
             <td>
                 <ButtonGroup>
-                    <Button bsSize="xsmall" onClick={() => { props.move(props.id) } }>Move</Button>
-                    <Button bsSize="xsmall" onClick={() => { props.shareRecord(props.id) } }>Share</Button>
-                    <Button bsSize="xsmall"  onClick={() => props.rename(props.id)}>Rename</Button>
-                    <Button bsSize="xsmall" onClick={() => props.changeParent(props.id)}>Open</Button>
-                    <Button bsSize="xsmall" onClick={(e) => { props.deleteRecord(props.id, props.trashed) } }>Delete</Button>
-                    <Button bsSize="xsmall" onClick={() => { props.addTag(props.id) } }><Glyphicon glyph={"plus"}/> Add Tag</Button>
+                    <Button bsSize="xsmall" onClick={() => props.changeParent(props.id)}><Glyphicon glyph={"folder-open"}/>Open</Button>
+                    <Button bsSize="xsmall" onClick={() => { props.move(props.id) } }><Glyphicon glyph={"move"}/>Move</Button>
+                    <Button bsSize="xsmall" onClick={() => { props.shareRecord(props.id) } }><Glyphicon glyph={"share-alt"}/> Share</Button>
+                    <Button bsSize="xsmall"  onClick={() => props.rename(props.id)}><Glyphicon glyph={"edit"}/>Rename</Button>                    
+                    <Button bsSize="xsmall" onClick={(e) => { props.deleteRecord(props.id, props.trashed) } }><Glyphicon glyph={"trash"}/>Delete</Button>
+                    <Button bsSize="xsmall" onClick={() => { props.addTag(props.id) } }><Glyphicon glyph={"plus"} /> Add Tag</Button>
+                    {untrashButton}
                 </ButtonGroup>
             </td>
         </tr>

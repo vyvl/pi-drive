@@ -21,7 +21,7 @@ public class UserController {
     public ResponseEntity<?> registerUser(@RequestParam(value = "username" , required = true) String userName,
                         @RequestParam(value="password", required = true) String password){
         if(userService.findUser(userName)!=null){
-            return new ResponseEntity<>("Username already exists.",HttpStatus.OK);
+            return new ResponseEntity<>("Username already exists.",HttpStatus.BAD_REQUEST);
         }
         User newUser = new User(userName,password);
         userService.saveUser(newUser);

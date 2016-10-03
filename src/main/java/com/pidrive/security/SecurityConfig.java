@@ -32,16 +32,20 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         http
 //                .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
 //                .and()
-        .authorizeRequests().antMatchers("/users").permitAll()
+                .authorizeRequests().antMatchers("/users").permitAll()
                 .anyRequest().authenticated()
                 .and()
                 .formLogin()
-                .defaultSuccessUrl("/")
+                .loginPage("/register")
+                .loginProcessingUrl("/login")
+                .usernameParameter("username")
+                .passwordParameter("password")
+                .defaultSuccessUrl("/",true)
                 .and()
                 .logout()
                 .logoutUrl("/logout")
                 //.logoutRequestMatcher(new AntPathRequestMatcher("/logout"))
-                .logoutSuccessUrl("/login")
+                .logoutSuccessUrl("/register")
                 .permitAll()
                 .and()
                 .csrf().disable();
@@ -50,6 +54,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Override
     public void configure(WebSecurity web) throws Exception {
-        web.ignoring().antMatchers("/v2/api-docs",  "/swagger-resources/**", "/configuration/security", "/swagger-ui.html", "/webjars/**","/users");
+        web.ignoring().antMatchers("/v2/api-docs",  "/swagger-resources/**", "/configuration/security", "/swagger-ui.html", "/webjars/**","/users",
+                "/register","/css/**","/dist/**","/index.html");
     }
 }

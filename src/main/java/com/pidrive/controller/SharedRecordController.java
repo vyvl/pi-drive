@@ -1,5 +1,6 @@
 package com.pidrive.controller;
 
+import com.pidrive.exception.UserNotFoundException;
 import com.pidrive.model.Record;
 import com.pidrive.model.SharedRecord;
 import com.pidrive.security.IAuthenticationFacade;
@@ -35,6 +36,9 @@ public class SharedRecordController {
 
     @RequestMapping(value = "/add", method = RequestMethod.POST)
     public ResponseEntity<?> shareRecord(@RequestBody SharedRecord sharedRecord){
+        if(sharedRecord.getUser()==null){
+            throw new UserNotFoundException("The username you specified does not exist");
+        }
         sharedRecord = sharedRecordService.saveSharedRecord(sharedRecord);
         return new ResponseEntity<Object>(sharedRecord, HttpStatus.OK);
     }
@@ -45,4 +49,6 @@ public class SharedRecordController {
         List<Record> records = sharedRecordService.getAllSharedRecords(userName);
         return new ResponseEntity<Object>(records,HttpStatus.OK);
     }
+
+
 }

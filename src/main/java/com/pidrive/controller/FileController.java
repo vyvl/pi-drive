@@ -8,10 +8,7 @@ import com.jayway.jsonpath.JsonPath;
 import com.pidrive.exception.IllegalTypeException;
 import com.pidrive.exception.RecordNotFoundException;
 import com.pidrive.exception.TagNotFoundException;
-import com.pidrive.model.FileContent;
-import com.pidrive.model.Record;
-import com.pidrive.model.SharedRecord;
-import com.pidrive.model.Tag;
+import com.pidrive.model.*;
 import com.pidrive.repository.FileContentRepository;
 import com.pidrive.repository.TagRepository;
 import com.pidrive.security.IAuthenticationFacade;
@@ -31,6 +28,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.net.URLEncoder;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -86,14 +84,14 @@ public class FileController {
             throw new IllegalTypeException("Folder Expected, Got File");
         }
         List<Record> children = record.getChildren();
-//        List<Record> unTrashedChildren = new ArrayList<>();
-//        for (int i = 0; i < children.size(); i++) {
-//            Record child = children.get(i);
-//            if(!child.isTrashed()){
-//                unTrashedChildren.add(child);
-//            }
-//        }
-        return new ResponseEntity<Object>(children,HttpStatus.OK);
+        List<Record> unTrashedChildren = new ArrayList<>();
+        for (int i = 0; i < children.size(); i++) {
+            Record child = children.get(i);
+            if(!child.isTrashed()){
+                unTrashedChildren.add(child);
+            }
+        }
+        return new ResponseEntity<Object>(unTrashedChildren,HttpStatus.OK);
     }
 
     @RequestMapping(value = "/{id}/content", method = RequestMethod.POST)
@@ -214,6 +212,8 @@ public class FileController {
         contentRepository.saveAndFlush(content);
         newRecord.setContent(copyContent);
         recordService.saveRecord(newRecord);
+        String userName =authenticationFacade.getAuthentication().getName();
+        SharedRecord sharedRecord = sharedRecordService.createNewSharedRecord(userName,newRecord,0);
         return newRecord;
     }
 
@@ -262,7 +262,9 @@ public class FileController {
 
     @RequestMapping(value = "/list/trash",method = RequestMethod.GET)
     public ResponseEntity<?> getTrashedRecords(){
-        List<Record> trashedRecords = recordService.getTrashedRecords();
+        User current = getCurrentUser();
+
+        List<Record> trashedRecords = sharedRecordService.getAllTrashedRecords(current);
         return new ResponseEntity<>(trashedRecords,HttpStatus.OK);
     }
 
@@ -293,7 +295,8 @@ public class FileController {
 
     @RequestMapping(value = "/list/{tag}",method = RequestMethod.GET)
     public ResponseEntity<?> getRecordsByTag(@PathVariable String tag){
-        List<Record> records = tagService.findRecordsByTag(tag);
+        User user = getCurrentUser();
+        List<Record> records = tagService.findRecordsByTag(user,tag);
         return new ResponseEntity<Object>(records,HttpStatus.OK);
     }
 
@@ -326,6 +329,7 @@ public class FileController {
         String userName = getUsername();
         return userService.findUser(userName);
     }
+
 
 
 }

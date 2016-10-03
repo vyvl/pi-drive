@@ -3,7 +3,7 @@ import * as ajax from 'superagent';
 import { combineReducers } from 'redux';
 
 export const reducers = combineReducers({
-    children, parent, modals, op, storedChildren
+    children, parent, modals, op
 });
 
 function children(state: IRecord[] = [], action:any): IRecord[] {
@@ -23,20 +23,6 @@ function children(state: IRecord[] = [], action:any): IRecord[] {
     }
 }
 
-function storedChildren(state: IRecord[] = [], action:any): IRecord[] {
-    switch (action.type) {
-        case 'FETCH_DONE':
-            return action.children;
-        case 'UPDATE_CHILD':
-            return updateChildren(state, action.child);
-        case 'REMOVE_CHILD':
-            return removeChild(state, action.id);
-        case 'NEW_CHILD':
-            return addChild(state, action.child);
-        default:
-            return state;
-    }
-}
 
 function parent(state: Number = null, action:any): Number {
     switch (action.type) {

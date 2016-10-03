@@ -47,4 +47,16 @@ public class SharedRecordService {
         List<Record> records = sharedRecords.stream().map(shared -> shared.getRecord()).collect(Collectors.toList());
         return records;
     }
+
+    public List<Record> getAllTrashedRecords(User user){
+        List<SharedRecord> sharedRecords = sharedRecordRepository.findByUserAndRecordIsTrashed(user,true);
+        List<Record> records = sharedRecords.stream().map(shared -> shared.getRecord()).collect(Collectors.toList());
+        return records;
+    }
+
+    public List<Record> filterRecordsForUser(User user,List<Record> records){
+        List<SharedRecord> sharedRecords = sharedRecordRepository.findByUserAndRecordIn(user,records);
+        records = sharedRecords.stream().map(shared -> shared.getRecord()).collect(Collectors.toList());;
+        return records;
+    }
 }
