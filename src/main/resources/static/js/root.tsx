@@ -9,15 +9,26 @@ import { LoginPage } from './register';
 import { App } from './app';
 import { Router, Route, IndexRoute, hashHistory, browserHistory } from 'react-router';
 
+declare let window: any;
+
 const enhancers = compose(applyMiddleware(thunkMiddleware),
     window.devToolsExtension ? window.devToolsExtension() : f => f
 );
 
 let store = createStore(reducers, enhancers);
-    store.dispatch(actionCreators.doFetch(null));
-const Home = () => {
-    return <Provider store={store}><App /></Provider>;
-};
+
+class Home extends React.Component<any, any>{
+
+    componentWillMount() {
+        store.dispatch(actionCreators.doFetch(null));
+        store.dispatch(actionCreators.getLoggedInUser());
+    }
+    render() {
+        return <Provider store={store}><App /></Provider>;
+    }
+
+}
+
 const RouteRender = () => {
     ReactDOM.render((
         <Router history={browserHistory}>
@@ -25,10 +36,6 @@ const RouteRender = () => {
             <Route path="/register" component={LoginPage} />
         </Router>), document.getElementById('app'));
 }
-const render = () => {
-    ReactDOM.render(<Home />, document.getElementById('app'));
-}
-// render();
-// store.subscribe(render);
+
 RouteRender();
-store.subscribe(RouteRender);
+//store.subscribe(RouteRender);

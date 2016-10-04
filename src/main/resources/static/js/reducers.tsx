@@ -3,10 +3,10 @@ import * as ajax from 'superagent';
 import { combineReducers } from 'redux';
 
 export const reducers = combineReducers({
-    children, parent, modals, op
+    children, parent, modals, op, user
 });
 
-function children(state: IRecord[] = [], action:any): IRecord[] {
+function children(state: IRecord[] = [], action: any): IRecord[] {
     switch (action.type) {
         case 'FETCH_DONE':
             return action.children;
@@ -24,7 +24,7 @@ function children(state: IRecord[] = [], action:any): IRecord[] {
 }
 
 
-function parent(state: Number = null, action:any): Number {
+function parent(state: Number = null, action: any): Number {
     switch (action.type) {
         case 'CHANGE_PARENT':
             return action.parent ? action.parent : null;
@@ -33,10 +33,10 @@ function parent(state: Number = null, action:any): Number {
     }
 }
 
-function modals(state = { upload: false }, action:any) {
+function modals(state = { upload: false }, action: any) {
     let newState = JSON.parse(JSON.stringify(state));
     switch (action.type) {
-        case 'SHOW_UPLOAD_DIALOG':            
+        case 'SHOW_UPLOAD_DIALOG':
             newState.upload = true;
             return newState;
         case 'HIDE_UPLOAD_DIALOG':
@@ -48,7 +48,7 @@ function modals(state = { upload: false }, action:any) {
 
 }
 
-function op(state:any = { id: null, type: 'COPY' }, action:any) {
+function op(state: any = { id: null, type: 'COPY' }, action: any) {
     switch (action.type) {
         case 'COPY':
         case 'MOVE':
@@ -62,6 +62,15 @@ function op(state:any = { id: null, type: 'COPY' }, action:any) {
         default:
             return state;
 
+    }
+}
+
+function user(state: any = {}, action: any) {
+    switch (action.type) {
+        case 'CHANGE_USER':
+            return action.user;
+        default:
+            return state;
     }
 }
 

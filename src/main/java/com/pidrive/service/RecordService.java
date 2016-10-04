@@ -9,12 +9,9 @@ import com.pidrive.model.Tag;
 import com.pidrive.repository.FileContentRepository;
 import com.pidrive.repository.RecordRepository;
 import com.pidrive.repository.TagRepository;
-import com.pidrive.security.IAuthenticationFacade;
+import com.pidrive.security.IAuthenticationFetcher;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.ComponentScan;
-import org.springframework.security.authentication.dao.SystemWideSaltSource;
-import org.springframework.security.core.Authentication;
-import org.springframework.stereotype.Repository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -39,7 +36,7 @@ public class RecordService {
     private TagRepository tagRepository;
 
     @Autowired
-    private IAuthenticationFacade authenticationFacade;
+    private IAuthenticationFetcher authenticationFacade;
 
     @Transactional
     public Record saveRecord(Record record){

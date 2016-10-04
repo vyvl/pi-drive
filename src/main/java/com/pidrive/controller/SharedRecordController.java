@@ -3,14 +3,13 @@ package com.pidrive.controller;
 import com.pidrive.exception.UserNotFoundException;
 import com.pidrive.model.Record;
 import com.pidrive.model.SharedRecord;
-import com.pidrive.security.IAuthenticationFacade;
+import com.pidrive.security.IAuthenticationFetcher;
 import com.pidrive.service.RecordService;
 import com.pidrive.service.SharedRecordService;
 import com.pidrive.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Repository;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -26,7 +25,7 @@ public class SharedRecordController {
     private SharedRecordService sharedRecordService;
 
     @Autowired
-    private IAuthenticationFacade authenticationFacade;
+    private IAuthenticationFetcher authenticationFacade;
 
     @Autowired
     private UserService userService;

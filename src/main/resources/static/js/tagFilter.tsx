@@ -12,7 +12,7 @@ export const TagSearch = (props:IProps) => {
 
         <Form inline>
             <FormGroup>
-                <FormControl type="text" bsSize={"sm"} placeholder="search tag" onChange={(e) => { searchTag = (e.target as HTMLInputElement).value; input = (e.target as HTMLInputElement) } } />
+                <FormControl type="text" placeholder="search tag" onChange={(e) => { searchTag = (e.target as HTMLInputElement).value; input = (e.target as HTMLInputElement) } } />
                 <Button onClick={() => { input && (input.value = ""); searchTag !== "" && props.searchTag(searchTag) } }>Search Tag</Button>
             </FormGroup>
         </Form>

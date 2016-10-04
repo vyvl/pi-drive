@@ -9,7 +9,7 @@ import org.springframework.stereotype.Component;
  */
 
 @Component
-public class AuthenticationnFacade implements IAuthenticationFacade {
+public class AuthenticationFetcher implements IAuthenticationFetcher {
 
     @Override
     public Authentication getAuthentication() {

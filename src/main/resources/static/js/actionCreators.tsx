@@ -19,17 +19,26 @@ export function changeParent(parent: Number) {
     })
 }
 
-export function deleteRecord(id: Number, trashed: boolean) {
+export function deleteRecord(id: Number, trashed: boolean,parent:number) {
     let getUrl = `files/${id}`;
     if (trashed) {
         getUrl = `${getUrl}/trash`;
     }
-    return (dispatch: Redux.Dispatch<any>) => ajax.delete(getUrl).end(function (err, res) {
-        if (!err && res) {
-            const child = JSON.parse(res.text);
-            changePage(err, res, child.parent, dispatch);
-        }
-    })
+    return (dispatch: Redux.Dispatch<any>) => {     
+        ajax.delete(getUrl).end((err, res) => {
+            if (!trashed) {
+                changePage(err, res, parent, dispatch)
+            }
+            else {
+                if (!err && res) {
+                    dispatch({
+                        type: 'REMOVE_CHILD',
+                        id
+                    })
+                }    
+            }
+        });
+    }
 }
 
 export function renameRecord(id: number, name: Number) {
@@ -61,12 +70,12 @@ export function doFetch(parent: Number) {
                       
                         let root = {};
                         try {
-                            root = JSON.parse(response.text);
+                            root  = JSON.parse(response.text);
                         }
                         catch (e) {
                             return;
                         }
-                        let parent = root.id;
+                        let parent = (root as IRecord).id;
                         ajax.get(`/files/${parent}/children`).end(
                             function (err: any, response: ajax.Response) {
                                 if (!err && response) {
@@ -167,10 +176,15 @@ export function paste(id: number, parent: number, op: string) {
     op = op.toLowerCase();
     return (dispatch: Redux.Dispatch<any>) => {
         return ajax.post(`/files/${id}/${op}`).set('Content-Type', 'application/json').send(JSON.stringify(body)).end((err, res) => {
-            dispatch({
-                type: 'PASTED'
-            });
-            changePage(err, res, parent, dispatch)
+            if (!err && res) {
+                dispatch({
+                    type: 'PASTED'
+                });
+                changePage(err, res, parent, dispatch)
+            }
+            else {
+                showError(err);
+            }
         });
     }
 }
@@ -178,6 +192,28 @@ export function paste(id: number, parent: number, op: string) {
 export function searchTag(tag: string) {
     return (dispatch: Redux.Dispatch<any>) => {
         ajax.get(`files/list/${tag}`)
+            .end((err, res) => {
+                if (!err && res) {
+                    let children: IRecord[] = JSON.parse(res.text);
+                    dispatch({
+                        type: 'CHANGE_PARENT',
+                        parent: null
+                    })
+                    dispatch({
+                        type: 'FETCH_DONE',
+                        children
+                    });
+                }
+            })
+    }
+}
+
+export function searchName(search: string) {
+    let body ={search}
+    return (dispatch: Redux.Dispatch<any>) => {
+        ajax.post(`files/search`)
+            .set('Content-Type', 'application/json').
+            send(JSON.stringify(body))
             .end((err, res) => {
                 if (!err && res) {
                     let children: IRecord[] = JSON.parse(res.text);
@@ -207,7 +243,7 @@ export function shareRecord(recordId: Number, userName: string, permission: Numb
                     bootbox.alert('Shared File Sucessfully');
                 }
                 else {
-                    bootbox.alert(JSON.parse(err.response.text).message);
+                    showError(err);
                 }
 
             })
@@ -230,6 +266,20 @@ export function getSharedRecords() {
                     });
                 }
             })
+    }
+}
+
+export function getLoggedInUser() {
+    return (dispatch: Redux.Dispatch<any>) => {
+        ajax.get(`users/getLoggedInUser`).end((err, res) => {
+            if (!err && res) {
+                let user = JSON.parse(res.text);
+                dispatch({
+                    type: 'CHANGE_USER',
+                    user
+                })
+            }    
+        })
     }
 }
 
@@ -284,4 +334,7 @@ function changePage(err: any, res: ajax.Response, parent: number, dispatch: Redu
             }
         });
     }
+}
+function showError(err:any) {
+     bootbox.alert(JSON.parse(err.response.text).message);
 }

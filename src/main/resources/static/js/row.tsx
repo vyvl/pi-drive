@@ -1,7 +1,6 @@
 import * as React from 'react';
 import { IRecord } from './interfaces/IRecord';
 import { Button, ButtonGroup,Glyphicon } from 'react-bootstrap';
-import { ShareRecordModal } from './shareRecord';
 import * as bootbox from 'bootbox';
 import { IProps,IFileProps,IFolderProps } from './interfaces/RowInterfaces';
 
@@ -31,7 +30,7 @@ export const Folder = (props: IProps) => {
             <FileRow name={props.name} id={props.id} rename={rename}
                 trashed={props.trashed} untrashRecord={props.untrashRecord} deleteRecord={props.deleteRecord}
                 addTag={addTag} tags={props.tags} removeTag={props.removeTag}
-                shareRecord={shareRecord} copy={props.copy} move={props.move}></FileRow>
+                shareRecord={shareRecord} copy={props.copy} move={props.move} parent={props.parent}></FileRow>
         );
     }
     else {
@@ -39,7 +38,7 @@ export const Folder = (props: IProps) => {
             <FolderRow name={props.name} id={props.id} rename={rename} children={props.children}
                 trashed={props.trashed} untrashRecord={props.untrashRecord} deleteRecord={props.deleteRecord}
                 addTag={addTag} tags={props.tags} removeTag={props.removeTag}
-                shareRecord={shareRecord} move={props.move} changeParent={props.changeParent}
+                shareRecord={shareRecord} move={props.move} changeParent={props.changeParent} parent={props.parent}
                 ></FolderRow>
         );
 
@@ -67,7 +66,7 @@ const FileRow = (props: IFileProps) => {
                     <Button bsSize="xsmall" onClick={() => { props.shareRecord(props.id) } }><Glyphicon glyph={"share-alt"}/>Share</Button>
                     <Button bsSize="xsmall" onClick={() => props.rename(props.id)}><Glyphicon glyph={"edit"}/>Rename</Button>                   
                     <Button bsSize="xsmall" onClick={() => { props.copy(props.id) } }><Glyphicon glyph={"duplicate"}/>Copy</Button>
-                    <Button bsSize="xsmall" onClick={(e) => { props.deleteRecord(props.id, props.trashed) } }><Glyphicon glyph={"trash"}/>Delete</Button>
+                    <Button bsSize="xsmall" onClick={(e) => { props.deleteRecord(props.id, props.trashed,props.parent) } }><Glyphicon glyph={"trash"}/>Delete</Button>
                     <Button bsSize="xsmall" onClick={() => { props.addTag(props.id) } }><Glyphicon glyph={"plus"} /> Add Tag</Button>
                     {untrashButton}
                 </ButtonGroup>
@@ -101,7 +100,7 @@ const FolderRow = (props: IFolderProps) => {
                     <Button bsSize="xsmall" onClick={() => { props.move(props.id) } }><Glyphicon glyph={"move"}/>Move</Button>
                     <Button bsSize="xsmall" onClick={() => { props.shareRecord(props.id) } }><Glyphicon glyph={"share-alt"}/> Share</Button>
                     <Button bsSize="xsmall"  onClick={() => props.rename(props.id)}><Glyphicon glyph={"edit"}/>Rename</Button>                    
-                    <Button bsSize="xsmall" onClick={(e) => { props.deleteRecord(props.id, props.trashed) } }><Glyphicon glyph={"trash"}/>Delete</Button>
+                    <Button bsSize="xsmall" onClick={(e) => { props.deleteRecord(props.id, props.trashed,props.parent) } }><Glyphicon glyph={"trash"}/>Delete</Button>
                     <Button bsSize="xsmall" onClick={() => { props.addTag(props.id) } }><Glyphicon glyph={"plus"} /> Add Tag</Button>
                     {untrashButton}
                 </ButtonGroup>

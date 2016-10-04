@@ -22,6 +22,7 @@ public class User{
 
     @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "root_id", referencedColumnName = "RECORD_ID")
+    @Cascade(org.hibernate.annotations.CascadeType.DELETE)
     private Record root;
 
     public String getUsername() {

@@ -20,4 +20,5 @@ public interface SharedRecordRepository extends JpaRepository<SharedRecord,Long>
     public List<SharedRecord> findByUserAndPermissionIn(User user,List<Integer> Permission);
     public List<SharedRecord> findByUserAndRecordIsTrashed(User user, boolean isTrashed);
     public List<SharedRecord> findByUserAndRecordIn(User user, List<Record> records);
+    public List<SharedRecord> findByUserAndRecordNameIgnoreCaseContaining(User user,String name);
 }

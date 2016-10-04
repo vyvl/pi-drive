@@ -59,4 +59,13 @@ public class SharedRecordService {
         records = sharedRecords.stream().map(shared -> shared.getRecord()).collect(Collectors.toList());;
         return records;
     }
+
+    public List<Record> filterRecordsByName(User user, String search){
+        List<SharedRecord> sharedRecords = sharedRecordRepository.findByUserAndRecordNameIgnoreCaseContaining(user,search);
+        return mapSharedRecordsToRecords(sharedRecords);
+    }
+
+    public List<Record> mapSharedRecordsToRecords(List<SharedRecord> sharedRecords){
+        return sharedRecords.stream().map(shared -> shared.getRecord()).collect(Collectors.toList());
+    }
 }

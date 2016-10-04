@@ -11,7 +11,7 @@ import com.pidrive.exception.TagNotFoundException;
 import com.pidrive.model.*;
 import com.pidrive.repository.FileContentRepository;
 import com.pidrive.repository.TagRepository;
-import com.pidrive.security.IAuthenticationFacade;
+import com.pidrive.security.IAuthenticationFetcher;
 import com.pidrive.service.RecordService;
 import com.pidrive.service.SharedRecordService;
 import com.pidrive.service.TagService;
@@ -27,7 +27,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -60,7 +59,7 @@ public class FileController {
     private SharedRecordService sharedRecordService;
 
     @Autowired
-    private IAuthenticationFacade authenticationFacade;
+    private IAuthenticationFetcher authenticationFacade;
 
     @RequestMapping(method = RequestMethod.POST)
     @ResponseBody
@@ -319,6 +318,16 @@ public class FileController {
         Map<String,Long> response = new HashMap<>();
         response.put("DeletedCount",deletedCount);
         return new ResponseEntity<Object>(response, HttpStatus.OK);
+    }
+
+    @RequestMapping(value = "/search",method = RequestMethod.POST)
+    public ResponseEntity<?> searchRecords(@RequestBody String searchTag){
+        User currentUser = getCurrentUser();
+        DocumentContext jsonContext = JsonPath.parse(searchTag);
+        String jsonSearchPath = "$.search";
+        String search = jsonContext.read(jsonSearchPath);
+        List<Record> records = sharedRecordService.filterRecordsByName(currentUser,search);
+        return new ResponseEntity<Object>(records,HttpStatus.OK);
     }
 
     private String getUsername(){

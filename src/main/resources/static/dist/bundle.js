@@ -45,6 +45,11 @@
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
+	var __extends = (this && this.__extends) || function (d, b) {
+	    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+	    function __() { this.constructor = d; }
+	    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+	};
 	var React = __webpack_require__(1);
 	var ReactDOM = __webpack_require__(34);
 	var redux_1 = __webpack_require__(172);
@@ -57,24 +62,29 @@
 	var react_router_1 = __webpack_require__(462);
 	var enhancers = redux_1.compose(redux_1.applyMiddleware(redux_thunk_1.default), window.devToolsExtension ? window.devToolsExtension() : function (f) { return f; });
 	var store = redux_1.createStore(reducers_1.reducers, enhancers);
-	store.dispatch(actionCreators.doFetch(null));
-	var Home = function () {
-	    return React.createElement(react_redux_1.Provider, {store: store}, 
-	        React.createElement(app_1.App, null)
-	    );
-	};
+	var Home = (function (_super) {
+	    __extends(Home, _super);
+	    function Home() {
+	        _super.apply(this, arguments);
+	    }
+	    Home.prototype.componentWillMount = function () {
+	        store.dispatch(actionCreators.doFetch(null));
+	        store.dispatch(actionCreators.getLoggedInUser());
+	    };
+	    Home.prototype.render = function () {
+	        return React.createElement(react_redux_1.Provider, {store: store}, 
+	            React.createElement(app_1.App, null)
+	        );
+	    };
+	    return Home;
+	}(React.Component));
 	var RouteRender = function () {
 	    ReactDOM.render((React.createElement(react_router_1.Router, {history: react_router_1.browserHistory}, 
 	        React.createElement(react_router_1.Route, {path: "/", component: Home}), 
 	        React.createElement(react_router_1.Route, {path: "/register", component: register_1.LoginPage}))), document.getElementById('app'));
 	};
-	var render = function () {
-	    ReactDOM.render(React.createElement(Home, null), document.getElementById('app'));
-	};
-	// render();
-	// store.subscribe(render);
 	RouteRender();
-	store.subscribe(RouteRender);
+	//store.subscribe(RouteRender);
 
 
 /***/ },
@@ -23054,7 +23064,7 @@
 	"use strict";
 	var redux_1 = __webpack_require__(172);
 	exports.reducers = redux_1.combineReducers({
-	    children: children, parent: parent, modals: modals, op: op
+	    children: children, parent: parent, modals: modals, op: op, user: user
 	});
 	function children(state, action) {
 	    if (state === void 0) { state = []; }
@@ -23111,6 +23121,15 @@
 	            return state;
 	    }
 	}
+	function user(state, action) {
+	    if (state === void 0) { state = {}; }
+	    switch (action.type) {
+	        case 'CHANGE_USER':
+	            return action.user;
+	        default:
+	            return state;
+	    }
+	}
 	function updateChildren(children, child) {
 	    var newChildren = children.map(function (currentChild) {
 	        return (currentChild.id == child.id) ? child : currentChild;
@@ -23151,17 +23170,26 @@
 	    }); };
 	}
 	exports.changeParent = changeParent;
-	function deleteRecord(id, trashed) {
+	function deleteRecord(id, trashed, parent) {
 	    var getUrl = "files/" + id;
 	    if (trashed) {
 	        getUrl = getUrl + "/trash";
 	    }
-	    return function (dispatch) { return ajax.delete(getUrl).end(function (err, res) {
-	        if (!err && res) {
-	            var child = JSON.parse(res.text);
-	            changePage(err, res, child.parent, dispatch);
-	        }
-	    }); };
+	    return function (dispatch) {
+	        ajax.delete(getUrl).end(function (err, res) {
+	            if (!trashed) {
+	                changePage(err, res, parent, dispatch);
+	            }
+	            else {
+	                if (!err && res) {
+	                    dispatch({
+	                        type: 'REMOVE_CHILD',
+	                        id: id
+	                    });
+	                }
+	            }
+	        });
+	    };
 	}
 	exports.deleteRecord = deleteRecord;
 	function renameRecord(id, name) {
@@ -23286,10 +23314,15 @@
 	    op = op.toLowerCase();
 	    return function (dispatch) {
 	        return ajax.post("/files/" + id + "/" + op).set('Content-Type', 'application/json').send(JSON.stringify(body)).end(function (err, res) {
-	            dispatch({
-	                type: 'PASTED'
-	            });
-	            changePage(err, res, parent, dispatch);
+	            if (!err && res) {
+	                dispatch({
+	                    type: 'PASTED'
+	                });
+	                changePage(err, res, parent, dispatch);
+	            }
+	            else {
+	                showError(err);
+	            }
 	        });
 	    };
 	}
@@ -23313,6 +23346,28 @@
 	    };
 	}
 	exports.searchTag = searchTag;
+	function searchName(search) {
+	    var body = { search: search };
+	    return function (dispatch) {
+	        ajax.post("files/search")
+	            .set('Content-Type', 'application/json').
+	            send(JSON.stringify(body))
+	            .end(function (err, res) {
+	            if (!err && res) {
+	                var children = JSON.parse(res.text);
+	                dispatch({
+	                    type: 'CHANGE_PARENT',
+	                    parent: null
+	                });
+	                dispatch({
+	                    type: 'FETCH_DONE',
+	                    children: children
+	                });
+	            }
+	        });
+	    };
+	}
+	exports.searchName = searchName;
 	function shareRecord(recordId, userName, permission) {
 	    if (permission === void 0) { permission = 1; }
 	    return function (dispatch) {
@@ -23327,7 +23382,7 @@
 	                bootbox.alert('Shared File Sucessfully');
 	            }
 	            else {
-	                bootbox.alert(JSON.parse(err.response.text).message);
+	                showError(err);
 	            }
 	        });
 	    };
@@ -23352,6 +23407,20 @@
 	    };
 	}
 	exports.getSharedRecords = getSharedRecords;
+	function getLoggedInUser() {
+	    return function (dispatch) {
+	        ajax.get("users/getLoggedInUser").end(function (err, res) {
+	            if (!err && res) {
+	                var user = JSON.parse(res.text);
+	                dispatch({
+	                    type: 'CHANGE_USER',
+	                    user: user
+	                });
+	            }
+	        });
+	    };
+	}
+	exports.getLoggedInUser = getLoggedInUser;
 	function getTrashedRecords() {
 	    return function (dispatch) {
 	        ajax.get("files/list/trash/")
@@ -23401,6 +23470,9 @@
 	            }
 	        });
 	    }
+	}
+	function showError(err) {
+	    bootbox.alert(JSON.parse(err.response.text).message);
 	}
 
 
@@ -25016,7 +25088,7 @@
 	                bootbox.alert('User registered successfully.');
 	            }
 	            else {
-	                bootbox.alert('Failed registering user');
+	                bootbox.alert('Failed registering user. Check username');
 	            }
 	        });
 	    };
@@ -43796,6 +43868,7 @@
 	var tagFilter_1 = __webpack_require__(460);
 	var bar_1 = __webpack_require__(461);
 	var react_redux_1 = __webpack_require__(186);
+	var searchFilter_1 = __webpack_require__(522);
 	var mapStateToProps = function (state) {
 	    return state;
 	};
@@ -43810,7 +43883,7 @@
 	            React.createElement("small", null, "PI-Drive")
 	        ), 
 	        React.createElement(react_bootstrap_1.Row, null, 
-	            React.createElement(bar_1.Navbar, __assign({parent: props.parent, op: props.op}, props.actions))
+	            React.createElement(bar_1.Bar, null)
 	        ), 
 	        React.createElement(react_bootstrap_1.Row, null, 
 	            React.createElement(react_bootstrap_1.Table, {striped: true}, 
@@ -43820,8 +43893,12 @@
 	                })))
 	        ), 
 	        React.createElement(react_bootstrap_1.Row, null, 
-	            React.createElement(tagFilter_1.TagSearch, {searchTag: props.actions.searchTag})
-	        ), 
+	            React.createElement(react_bootstrap_1.Col, {lg: 6}, 
+	                React.createElement(tagFilter_1.TagSearch, {searchTag: props.actions.searchTag})
+	            ), 
+	            React.createElement(react_bootstrap_1.Col, {lg: 6}, 
+	                React.createElement(searchFilter_1.NameSearch, {searchName: props.actions.searchName})
+	            )), 
 	        React.createElement(uploadFile_1.UploadModal, {show: props.modals.upload, hide: props.actions.closeFileUploadModal, uploadFile: props.actions.uploadFile, parent: props.parent})));
 	};
 	exports.App = react_redux_1.connect(mapStateToProps, mapDispatchToProps)(Root);
@@ -43849,10 +43926,10 @@
 	        });
 	    }
 	    if (!props.folder) {
-	        return (React.createElement(FileRow, {name: props.name, id: props.id, rename: rename, trashed: props.trashed, untrashRecord: props.untrashRecord, deleteRecord: props.deleteRecord, addTag: addTag, tags: props.tags, removeTag: props.removeTag, shareRecord: shareRecord, copy: props.copy, move: props.move}));
+	        return (React.createElement(FileRow, {name: props.name, id: props.id, rename: rename, trashed: props.trashed, untrashRecord: props.untrashRecord, deleteRecord: props.deleteRecord, addTag: addTag, tags: props.tags, removeTag: props.removeTag, shareRecord: shareRecord, copy: props.copy, move: props.move, parent: props.parent}));
 	    }
 	    else {
-	        return (React.createElement(FolderRow, {name: props.name, id: props.id, rename: rename, children: props.children, trashed: props.trashed, untrashRecord: props.untrashRecord, deleteRecord: props.deleteRecord, addTag: addTag, tags: props.tags, removeTag: props.removeTag, shareRecord: shareRecord, move: props.move, changeParent: props.changeParent}));
+	        return (React.createElement(FolderRow, {name: props.name, id: props.id, rename: rename, children: props.children, trashed: props.trashed, untrashRecord: props.untrashRecord, deleteRecord: props.deleteRecord, addTag: addTag, tags: props.tags, removeTag: props.removeTag, shareRecord: shareRecord, move: props.move, changeParent: props.changeParent, parent: props.parent}));
 	    }
 	};
 	var FileRow = function (props) {
@@ -43890,7 +43967,7 @@
 	                React.createElement(react_bootstrap_1.Button, {bsSize: "xsmall", onClick: function () { props.copy(props.id); }}, 
 	                    React.createElement(react_bootstrap_1.Glyphicon, {glyph: "duplicate"}), 
 	                    "Copy"), 
-	                React.createElement(react_bootstrap_1.Button, {bsSize: "xsmall", onClick: function (e) { props.deleteRecord(props.id, props.trashed); }}, 
+	                React.createElement(react_bootstrap_1.Button, {bsSize: "xsmall", onClick: function (e) { props.deleteRecord(props.id, props.trashed, props.parent); }}, 
 	                    React.createElement(react_bootstrap_1.Glyphicon, {glyph: "trash"}), 
 	                    "Delete"), 
 	                React.createElement(react_bootstrap_1.Button, {bsSize: "xsmall", onClick: function () { props.addTag(props.id); }}, 
@@ -43933,7 +44010,7 @@
 	                React.createElement(react_bootstrap_1.Button, {bsSize: "xsmall", onClick: function () { return props.rename(props.id); }}, 
 	                    React.createElement(react_bootstrap_1.Glyphicon, {glyph: "edit"}), 
 	                    "Rename"), 
-	                React.createElement(react_bootstrap_1.Button, {bsSize: "xsmall", onClick: function (e) { props.deleteRecord(props.id, props.trashed); }}, 
+	                React.createElement(react_bootstrap_1.Button, {bsSize: "xsmall", onClick: function (e) { props.deleteRecord(props.id, props.trashed, props.parent); }}, 
 	                    React.createElement(react_bootstrap_1.Glyphicon, {glyph: "trash"}), 
 	                    "Delete"), 
 	                React.createElement(react_bootstrap_1.Button, {bsSize: "xsmall", onClick: function () { props.addTag(props.id); }}, 
@@ -43992,7 +44069,7 @@
 	    var input = null;
 	    return (React.createElement(react_bootstrap_1.Form, {inline: true}, 
 	        React.createElement(react_bootstrap_1.FormGroup, null, 
-	            React.createElement(react_bootstrap_1.FormControl, {type: "text", bsSize: "sm", placeholder: "search tag", onChange: function (e) { searchTag = e.target.value; input = e.target; }}), 
+	            React.createElement(react_bootstrap_1.FormControl, {type: "text", placeholder: "search tag", onChange: function (e) { searchTag = e.target.value; input = e.target; }}), 
 	            React.createElement(react_bootstrap_1.Button, {onClick: function () { input && (input.value = ""); searchTag !== "" && props.searchTag(searchTag); }}, "Search Tag"))
 	    ));
 	};
@@ -44006,23 +44083,66 @@
 	var React = __webpack_require__(1);
 	var react_bootstrap_1 = __webpack_require__(205);
 	var bootbox = __webpack_require__(203);
+	var actionsCreators = __webpack_require__(197);
+	var redux_1 = __webpack_require__(172);
+	var react_redux_1 = __webpack_require__(186);
+	var actions = {
+	    doFetch: actionsCreators.doFetch,
+	    addRecord: actionsCreators.addRecord,
+	    getSharedRecords: actionsCreators.getSharedRecords,
+	    getTrashedRecords: actionsCreators.getTrashedRecords,
+	    paste: actionsCreators.paste,
+	    fileUploadModal: actionsCreators.fileUploadModal
+	};
 	exports.Navbar = function (props) {
-	    var paste = (props.op.id) ? React.createElement(react_bootstrap_1.Button, {onClick: function () { props.paste(props.op.id, props.parent, props.op.type); }}, "Paste") : null;
-	    return (React.createElement(react_bootstrap_1.ButtonGroup, {bsClass: "pull-right"}, 
+	    var paste = (props.op.id && props.parent) ? React.createElement(react_bootstrap_1.Button, {onClick: function () { props.paste(props.op.id, props.parent, props.op.type); }}, 
+	        React.createElement(react_bootstrap_1.Glyphicon, {glyph: "paste"}), 
+	        "Paste") : null;
+	    var addFolder = (props.parent) ? React.createElement(react_bootstrap_1.Button, {onClick: function () {
+	        bootbox.prompt('Enter name of the folder', function (name) {
+	            name && props.addRecord(name, props.parent, true);
+	        });
+	    }}, 
+	        " ", 
+	        React.createElement(react_bootstrap_1.Glyphicon, {glyph: "folder-open"}), 
+	        " Add Folder ") : null;
+	    var addFile = (props.parent) ? React.createElement(react_bootstrap_1.Button, {onClick: function () { props.fileUploadModal(); }}, 
+	        React.createElement(react_bootstrap_1.Glyphicon, {glyph: "upload"}), 
+	        "Add File") : null;
+	    return (React.createElement(react_bootstrap_1.ButtonGroup, {bsClass: "pull-right "}, 
 	        React.createElement(react_bootstrap_1.Button, {onClick: function () {
 	            props.doFetch();
-	        }}, "Return to Home"), 
-	        React.createElement(react_bootstrap_1.Button, {onClick: function () {
-	            bootbox.prompt('Enter name of the folder', function (name) {
-	                name && props.addRecord(name, props.parent, true);
-	            });
-	        }}, " Add Folder "), 
-	        React.createElement(react_bootstrap_1.Button, {onClick: function () { props.fileUploadModal(); }}, "Add File"), 
+	        }}, 
+	            React.createElement(react_bootstrap_1.Glyphicon, {glyph: "level-up"}), 
+	            "Return to Home"), 
+	        addFolder, 
+	        addFile, 
 	        paste, 
-	        React.createElement(react_bootstrap_1.Button, {onClick: function () { props.getSharedRecords(); }}, "Shared Files"), 
-	        React.createElement(react_bootstrap_1.Button, {onClick: function () { props.getTrashedRecords(); }}, "Trashed Files"), 
-	        React.createElement(react_bootstrap_1.Button, {onClick: function () { window.location.href = "/logout"; }}, "Log Out")));
+	        React.createElement(react_bootstrap_1.Button, {onClick: function () { props.getSharedRecords(); }}, 
+	            React.createElement(react_bootstrap_1.Glyphicon, {glyph: "share"}), 
+	            "Shared Files"), 
+	        React.createElement(react_bootstrap_1.Button, {onClick: function () { props.getTrashedRecords(); }}, 
+	            React.createElement(react_bootstrap_1.Glyphicon, {glyph: "trash"}), 
+	            "Trashed Files"), 
+	        React.createElement(react_bootstrap_1.Button, {onClick: function () { window.location.href = "/logout"; }}, 
+	            " ", 
+	            React.createElement(react_bootstrap_1.Glyphicon, {glyph: "off"}), 
+	            "Log Out", 
+	            React.createElement("sup", null, 
+	                " ", 
+	                props.user.username))));
 	};
+	var mapStateToProps = function (state) {
+	    return {
+	        parent: state.parent,
+	        op: state.op,
+	        user: state.user
+	    };
+	};
+	var mapDispatchToProps = function (dispatch) {
+	    return redux_1.bindActionCreators(actions, dispatch);
+	};
+	exports.Bar = react_redux_1.connect(mapStateToProps, mapDispatchToProps)(exports.Navbar);
 
 
 /***/ },
@@ -49495,6 +49615,24 @@
 	
 	exports.default = (0, _createRouterHistory2.default)(_createHashHistory2.default);
 	module.exports = exports['default'];
+
+/***/ },
+/* 522 */
+/***/ function(module, exports, __webpack_require__) {
+
+	"use strict";
+	var React = __webpack_require__(1);
+	var react_bootstrap_1 = __webpack_require__(205);
+	exports.NameSearch = function (props) {
+	    var search = "";
+	    var input = null;
+	    return (React.createElement(react_bootstrap_1.Form, {inline: true}, 
+	        React.createElement(react_bootstrap_1.FormGroup, null, 
+	            React.createElement(react_bootstrap_1.FormControl, {type: "text", placeholder: "search name", onChange: function (e) { search = e.target.value; input = e.target; }}), 
+	            React.createElement(react_bootstrap_1.Button, {onClick: function () { input && (input.value = ""); search !== "" && props.searchName(search); }}, "Search Name"))
+	    ));
+	};
+
 
 /***/ }
 /******/ ]);
