@@ -9,7 +9,7 @@ import { LoginPage } from './register';
 import { App } from './app';
 import { Router, Route, IndexRoute, hashHistory, browserHistory } from 'react-router';
 
-declare let window: any;
+declare const window: any;
 
 const enhancers = compose(applyMiddleware(thunkMiddleware),
     window.devToolsExtension ? window.devToolsExtension() : f => f

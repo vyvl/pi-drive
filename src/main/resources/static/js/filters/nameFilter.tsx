@@ -1,13 +1,13 @@
 import * as React from 'react';
 import { FormControl, Button, Form, FormGroup } from 'react-bootstrap';
 
-interface IProps{
-    searchName:Function
+interface IProps {
+    searchName: Function
 }
 
-export const NameSearch = (props:IProps) => {
+export const NameFilter = (props: IProps) => {
     let search = "";
-    let input:HTMLInputElement = null;
+    let input: HTMLInputElement = null;
     return (
 
         <Form inline>

@@ -1,3 +1,4 @@
+
 export interface IRecord {
     id: number;
     name: string;
@@ -7,3 +8,4 @@ export interface IRecord {
     tags: string[];
     parent: number;
 }
+

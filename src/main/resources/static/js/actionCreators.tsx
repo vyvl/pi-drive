@@ -19,12 +19,12 @@ export function changeParent(parent: Number) {
     })
 }
 
-export function deleteRecord(id: Number, trashed: boolean,parent:number) {
+export function deleteRecord(id: Number, trashed: boolean, parent: number) {
     let getUrl = `files/${id}`;
     if (trashed) {
         getUrl = `${getUrl}/trash`;
     }
-    return (dispatch: Redux.Dispatch<any>) => {     
+    return (dispatch: Redux.Dispatch<any>) => {
         ajax.delete(getUrl).end((err, res) => {
             if (!trashed) {
                 changePage(err, res, parent, dispatch)
@@ -35,13 +35,13 @@ export function deleteRecord(id: Number, trashed: boolean,parent:number) {
                         type: 'REMOVE_CHILD',
                         id
                     })
-                }    
+                }
             }
         });
     }
 }
 
-export function renameRecord(id: number, name: Number) {
+export function renameRecord(id: number, name: String) {
     return (dispatch: Redux.Dispatch<any>) => ajax.post(`files/${id}/rename`)
         .set('Content-Type', 'application/json')
         .send(JSON.stringify({ "newName": name })).end((err, res) => updateChild(err, res, dispatch));
@@ -67,10 +67,10 @@ export function doFetch(parent: Number) {
                 function (err: any, response: ajax.Response) {
 
                     if (!err && response) {
-                      
+
                         let root = {};
                         try {
-                            root  = JSON.parse(response.text);
+                            root = JSON.parse(response.text);
                         }
                         catch (e) {
                             return;
@@ -209,7 +209,7 @@ export function searchTag(tag: string) {
 }
 
 export function searchName(search: string) {
-    let body ={search}
+    let body = { search }
     return (dispatch: Redux.Dispatch<any>) => {
         ajax.post(`files/search`)
             .set('Content-Type', 'application/json').
@@ -278,7 +278,7 @@ export function getLoggedInUser() {
                     type: 'CHANGE_USER',
                     user
                 })
-            }    
+            }
         })
     }
 }
@@ -335,6 +335,6 @@ function changePage(err: any, res: ajax.Response, parent: number, dispatch: Redu
         });
     }
 }
-function showError(err:any) {
-     bootbox.alert(JSON.parse(err.response.text).message);
+function showError(err: any) {
+    bootbox.alert(JSON.parse(err.response.text).message);
 }

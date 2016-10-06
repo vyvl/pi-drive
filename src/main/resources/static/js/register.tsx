@@ -52,7 +52,10 @@ export const Login = () => {
     );
 }
 
-export const LoginPage = () => {
+export const LoginPage = (props: any) => {
+    if ((props.location.search as string).indexOf('error') != -1) {
+       bootbox.alert('Login failed. Check credentials.')
+   }
     return (
         <Grid>
             <Row>

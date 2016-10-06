@@ -17,7 +17,8 @@ var config1 = {
             // All files with a '.ts' or '.tsx' extension will be handled by 'ts-loader'.
             {
                 test: /\.tsx?$/,
-                loader: "ts-loader"
+                loader: "ts-loader",
+                exclude: /node_modules\/@types/
             }
         ],
 
@@ -36,8 +37,8 @@ var config1 = {
     // dependencies, which allows browsers to cache those libraries between builds.
     externals: {
         "bootbox": "bootbox"
-            // "react": "React",
-            // "react-dom": "ReactDOM"
+        // "react": "React",
+        // "react-dom": "ReactDOM"
     },
 };
 
@@ -60,7 +61,8 @@ var config2 = {
             // All files with a '.ts' or '.tsx' extension will be handled by 'ts-loader'.
             {
                 test: /\.tsx?$/,
-                loader: "ts-loader"
+                loader: "ts-loader",
+                exclude: /node_modules\/@types/
             }
         ],
 
@@ -79,8 +81,8 @@ var config2 = {
     // dependencies, which allows browsers to cache those libraries between builds.
     externals: {
         "bootbox": "bootbox"
-            // "react": "React",
-            // "react-dom": "ReactDOM"
+        // "react": "React",
+        // "react-dom": "ReactDOM"
     },
 };
 module.exports = [config1, config2];
