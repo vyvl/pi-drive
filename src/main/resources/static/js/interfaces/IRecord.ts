@@ -9,3 +9,4 @@ export interface IRecord {
     parent: number;
 }
 
+export default IRecord;

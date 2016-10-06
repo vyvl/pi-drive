@@ -1,23 +1,25 @@
 import * as React from 'react';
 import { Button, ButtonGroup, Glyphicon } from 'react-bootstrap';
 import * as bootbox from 'bootbox';
-import { IUser } from './interfaces/IUser';
+import IUser from './interfaces/IUser';
+import {IState} from './interfaces/IState';
 import * as actionsCreators from './actionCreators';
 import { bindActionCreators, Dispatch } from 'redux';
 import { connect } from 'react-redux';
 interface IProps {
+    parent: number;
+    op: { id: number, type: string };
+    user: IUser;
     doFetch: Function;
-    addRecord: Function;
-    parent: Number;
+    addRecord: Function;   
     fileUploadModal: Function;
     getSharedRecords: Function
     getTrashedRecords: Function
-    paste(id: Number, parent: Number, type: string): void;
-    op: { id: Number, type: string };
-    user: IUser;
+    paste(id: number, parent: number, type: string): void;
+
 }
 
-let actions = {
+const actions = {
     doFetch: actionsCreators.doFetch,
     addRecord: actionsCreators.addRecord,
     getSharedRecords: actionsCreators.getSharedRecords,
@@ -25,6 +27,19 @@ let actions = {
     paste: actionsCreators.paste,
     fileUploadModal: actionsCreators.fileUploadModal
 }
+
+const mapStateToProps = (state: IState) => {
+    return {
+        parent: state.parent,
+        op: state.op,
+        user: state.user
+    }
+}
+
+const mapDispatchToProps = (dispatch: Dispatch<any>) => {
+    return bindActionCreators(actions, dispatch);
+}
+
 
 export const Navbar = (props: IProps) => {
     let createFolder = () => {
@@ -50,16 +65,5 @@ export const Navbar = (props: IProps) => {
     );
 }
 
-const mapStateToProps = (state: any) => {
-    return {
-        parent: state.parent,
-        op: state.op,
-        user: state.user
-    }
-}
-
-const mapDispatchToProps = (dispatch: Dispatch<any>) => {
-    return bindActionCreators(actions, dispatch);
-}
 
 export const Bar = connect(mapStateToProps, mapDispatchToProps)(Navbar);

@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { IRecord } from '../interfaces/IRecord';
+import IRecord from '../interfaces/IRecord';
 import { Button, ButtonGroup, Glyphicon } from 'react-bootstrap';
 import * as bootbox from 'bootbox';
 import { IProps, IFileProps, IFolderProps } from '../interfaces/RowInterfaces';
@@ -14,13 +14,13 @@ export const Folder = (props: IProps) => {
     function rename(id: number) {
         bootbox.prompt("Enter new name", (name) => { name && props.renameRecord(id, name) });
     }
-    function addTag(id: Number) {
+    function addTag(id: number) {
         bootbox.prompt("Enter new tag",
             (tag) => { tag && props.addTag(id, tag) }
         );
     }
 
-    function shareRecord(id: Number) {
+    function shareRecord(id: number) {
         bootbox.prompt("Enter User Name", (userName) => {
             props.shareRecord(id, userName, 1);
         })

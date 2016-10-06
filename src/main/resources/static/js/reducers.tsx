@@ -1,4 +1,4 @@
-import { IRecord } from './interfaces/IRecord';
+import IRecord from './interfaces/IRecord';
 import * as ajax from 'superagent';
 import { combineReducers } from 'redux';
 
@@ -24,7 +24,7 @@ function children(state: IRecord[] = [], action: any): IRecord[] {
 }
 
 
-function parent(state: Number = null, action: any): Number {
+function parent(state: number = null, action: any): number {
     switch (action.type) {
         case 'CHANGE_PARENT':
             return action.parent ? action.parent : null;

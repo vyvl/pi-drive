@@ -6,46 +6,46 @@ export interface IProps {
     trashed: boolean;
     children: number;
     tags: string[];
-    changeParent(id: Number): any;
-    deleteRecord(id: Number, trashed: boolean, parent: Number): any;
-    renameRecord(id: Number, newName: String): any;
+    changeParent(id: number): any;
+    deleteRecord(id: number, trashed: boolean, parent: number): any;
+    renameRecord(id: number, newName: string): any;
     untrashRecord(id: number): any;
-    addTag(id: Number, tag: String): any;
-    removeTag(id: Number, tag: String): any;
-    shareRecord(id: Number, userName: String, permission: Number): any;
-    copy(id: Number): any;
-    move(id: Number): any;
+    addTag(id: number, tag: string): any;
+    removeTag(id: number, tag: string): any;
+    shareRecord(id: number, userName: string, permission: number): any;
+    copy(id: number): any;
+    move(id: number): any;
 }
 
 export interface IFileProps {
     name: string
-    id: Number;
+    id: number;
     parent: number;
-    rename(id: Number): void;
+    rename(id: number): void;
     trashed: boolean;
-    untrashRecord(id: Number): void;
-    deleteRecord(id: Number, trashed: boolean, parent: Number): void;
-    addTag(id: Number): void;
-    tags: String[];
-    removeTag(id: Number, tag: String): void;
-    copy(id: Number): void;
-    move(id: Number): void;
-    shareRecord(id: Number): void;
+    untrashRecord(id: number): void;
+    deleteRecord(id: number, trashed: boolean, parent: number): void;
+    addTag(id: number): void;
+    tags: string[];
+    removeTag(id: number, tag: string): void;
+    copy(id: number): void;
+    move(id: number): void;
+    shareRecord(id: number): void;
 }
 
 export interface IFolderProps {
     name: string;
-    id: Number;
+    id: number;
     parent: number;
-    rename(id: Number): void;
-    children: Number;
+    rename(id: number): void;
+    children: number;
     trashed: boolean;
-    untrashRecord(id: Number): void;
-    deleteRecord(id: Number, trashed: boolean, parent: Number): void;
-    addTag(id: Number): void;
-    tags: String[];
-    removeTag(id: Number, tag: String): void;
-    move(id: Number): void;
-    shareRecord(id: Number): void;
-    changeParent(id: Number): void;
+    untrashRecord(id: number): void;
+    deleteRecord(id: number, trashed: boolean, parent: number): void;
+    addTag(id: number): void;
+    tags: string[];
+    removeTag(id: number, tag: string): void;
+    move(id: number): void;
+    shareRecord(id: number): void;
+    changeParent(id: number): void;
 }

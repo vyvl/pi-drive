@@ -1,9 +1,9 @@
 import * as ajax from 'superagent';
 import * as Redux from 'redux';
-import { IRecord } from './interfaces/IRecord';
+import IRecord from './interfaces/IRecord';
 import * as bootbox from 'bootbox';
 
-export function changeParent(parent: Number) {
+export function changeParent(parent: number) {
     return (dispatch: Redux.Dispatch<any>) => ajax.get(`files/${parent}/children`).end(function (err, res) {
         if (!err && res) {
             let children = JSON.parse(res.text);
@@ -19,7 +19,7 @@ export function changeParent(parent: Number) {
     })
 }
 
-export function deleteRecord(id: Number, trashed: boolean, parent: number) {
+export function deleteRecord(id: number, trashed: boolean, parent: number) {
     let getUrl = `files/${id}`;
     if (trashed) {
         getUrl = `${getUrl}/trash`;
@@ -41,7 +41,7 @@ export function deleteRecord(id: Number, trashed: boolean, parent: number) {
     }
 }
 
-export function renameRecord(id: number, name: String) {
+export function renameRecord(id: number, name: string) {
     return (dispatch: Redux.Dispatch<any>) => ajax.post(`files/${id}/rename`)
         .set('Content-Type', 'application/json')
         .send(JSON.stringify({ "newName": name })).end((err, res) => updateChild(err, res, dispatch));
@@ -59,7 +59,7 @@ export function untrashRecord(id: number) {
 
 }
 
-export function doFetch(parent: Number) {
+export function doFetch(parent: number) {
     let path = 'root';
     if (!parent)
         return function (dispatch: Redux.Dispatch<any>) {
@@ -115,12 +115,12 @@ export function doFetch(parent: Number) {
     }
 }
 
-export function addRecord(name: String, parent: Number, folder: boolean) {
+export function addRecord(name: string, parent: number, folder: boolean) {
     let body = { name, parent, folder };
     return (dispatch: Redux.Dispatch<any>) => { return ajax.post('/files').set('Content-Type', 'application/json').send(JSON.stringify(body)).end((err, res) => { newChild(err, res, dispatch) }) }
 }
 
-export function addTag(id: number, tag: String) {
+export function addTag(id: number, tag: string) {
     let body = { tags: [tag] };
     return (dispatch: Redux.Dispatch<any>) => { return ajax.post(`/files/${id}/tags`).set('Content-Type', 'application/json').send(JSON.stringify(body)).end((err, res) => { updateChild(err, res, dispatch) }) }
 }
@@ -230,7 +230,7 @@ export function searchName(search: string) {
     }
 }
 
-export function shareRecord(recordId: Number, userName: string, permission: Number = 1) {
+export function shareRecord(recordId: number, userName: string, permission: number = 1) {
     return (dispatch: Redux.Dispatch<any>) => {
         ajax.post('shared/add')
             .set('Content-Type', 'application/json')
