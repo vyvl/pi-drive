@@ -50,3 +50,15 @@ fabric.properties
 
 /src/main/resources/static/node_modules/
 /src/main/resources/static/.vscode/
+/pi-drive.iml
+/.classpath
+/.project
+.classpath
+.idea/
+.mvn/
+.project
+.settings/
+node_modules/
+pi-drive.iml
+src/main/resources/templates/
+target/
