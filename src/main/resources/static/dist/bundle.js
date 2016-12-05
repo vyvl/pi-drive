@@ -80,10 +80,10 @@
 	var RouteRender = function () {
 	    ReactDOM.render((React.createElement(react_router_1.Router, { history: react_router_1.browserHistory },
 	        React.createElement(react_router_1.Route, { path: "/", component: Home }),
-	        React.createElement(react_router_1.Route, { path: "/register", component: register_1.LoginPage }))), document.getElementById('app'));
+	        React.createElement(react_router_1.Route, { path: "/register", component: register_1.LoginPage }))), document.getElementById("app"));
 	};
 	RouteRender();
-	//store.subscribe(RouteRender);
+	// store.subscribe(RouteRender);
 
 
 /***/ },
@@ -23281,15 +23281,15 @@
 	function children(state, action) {
 	    if (state === void 0) { state = []; }
 	    switch (action.type) {
-	        case 'FETCH_DONE':
+	        case "FETCH_DONE":
 	            return action.children;
-	        case 'UPDATE_CHILD':
+	        case "UPDATE_CHILD":
 	            return updateChildren(state, action.child);
-	        case 'REMOVE_CHILD':
+	        case "REMOVE_CHILD":
 	            return removeChild(state, action.id);
-	        case 'NEW_CHILD':
+	        case "NEW_CHILD":
 	            return addChild(state, action.child);
-	        case 'FILTER_TAG':
+	        case "FILTER_TAG":
 	            return action.children;
 	        default:
 	            return state;
@@ -23298,7 +23298,7 @@
 	function parent(state, action) {
 	    if (state === void 0) { state = null; }
 	    switch (action.type) {
-	        case 'CHANGE_PARENT':
+	        case "CHANGE_PARENT":
 	            return action.parent ? action.parent : null;
 	        default:
 	            return state;
@@ -23308,10 +23308,10 @@
 	    if (state === void 0) { state = { upload: false }; }
 	    var newState = JSON.parse(JSON.stringify(state));
 	    switch (action.type) {
-	        case 'SHOW_UPLOAD_DIALOG':
+	        case "SHOW_UPLOAD_DIALOG":
 	            newState.upload = true;
 	            return newState;
-	        case 'HIDE_UPLOAD_DIALOG':
+	        case "HIDE_UPLOAD_DIALOG":
 	            newState.upload = false;
 	            return newState;
 	        default:
@@ -23319,16 +23319,16 @@
 	    }
 	}
 	function op(state, action) {
-	    if (state === void 0) { state = { id: null, type: 'COPY' }; }
+	    if (state === void 0) { state = { id: null, type: "COPY" }; }
 	    switch (action.type) {
-	        case 'COPY':
-	        case 'MOVE':
+	        case "COPY":
+	        case "MOVE":
 	            var newState = JSON.parse(JSON.stringify(state));
 	            newState.id = action.id;
 	            newState.type = action.type;
 	            return newState;
-	        case 'PASTED':
-	            return { id: null, type: 'COPY' };
+	        case "PASTED":
+	            return { id: null, type: "COPY" };
 	        default:
 	            return state;
 	    }
@@ -23336,7 +23336,7 @@
 	function user(state, action) {
 	    if (state === void 0) { state = {}; }
 	    switch (action.type) {
-	        case 'CHANGE_USER':
+	        case "CHANGE_USER":
 	            return action.user;
 	        default:
 	            return state;
@@ -23344,13 +23344,13 @@
 	}
 	function updateChildren(children, child) {
 	    var newChildren = children.map(function (currentChild) {
-	        return (currentChild.id == child.id) ? child : currentChild;
+	        return (currentChild.id === child.id) ? child : currentChild;
 	    });
 	    return newChildren;
 	}
 	function removeChild(children, id) {
 	    var newChildren = children.filter(function (child) {
-	        return child.id != id;
+	        return child.id !== id;
 	    });
 	    return newChildren;
 	}
@@ -23414,11 +23414,11 @@
 	                    res = _a.sent();
 	                    children = JSON.parse(res.text);
 	                    dispatch({
-	                        type: 'CHANGE_PARENT',
+	                        type: "CHANGE_PARENT",
 	                        parent: parent
 	                    });
 	                    dispatch({
-	                        type: 'FETCH_DONE',
+	                        type: "FETCH_DONE",
 	                        children: children
 	                    });
 	                    return [3 /*break*/, 3];
@@ -23451,7 +23451,7 @@
 	                    }
 	                    else {
 	                        dispatch({
-	                            type: 'REMOVE_CHILD',
+	                            type: "REMOVE_CHILD",
 	                            id: id
 	                        });
 	                    }
@@ -23472,7 +23472,7 @@
 	        return __generator(this, function (_a) {
 	            switch (_a.label) {
 	                case 0: return [4 /*yield*/, ajax.post("files/" + id + "/rename")
-	                        .set('Content-Type', 'application/json')
+	                        .set("Content-Type", "application/json")
 	                        .send(JSON.stringify({ "newName": name }))];
 	                case 1:
 	                    res = _a.sent();
@@ -23500,7 +23500,7 @@
 	}
 	exports.untrashRecord = untrashRecord;
 	function doFetch(parent) {
-	    var path = 'root';
+	    var path = "root";
 	    if (!parent)
 	        return function (dispatch) {
 	            return __awaiter(this, void 0, void 0, function () {
@@ -23523,11 +23523,11 @@
 	                            response = _a.sent();
 	                            children = JSON.parse(response.text);
 	                            dispatch({
-	                                type: 'CHANGE_PARENT',
+	                                type: "CHANGE_PARENT",
 	                                parent: parent
 	                            });
 	                            dispatch({
-	                                type: 'FETCH_DONE',
+	                                type: "FETCH_DONE",
 	                                children: children
 	                            });
 	                            return [2 /*return*/];
@@ -23548,11 +23548,11 @@
 	                        res = _a.sent();
 	                        children = JSON.parse(res.text);
 	                        dispatch({
-	                            type: 'CHANGE_PARENT',
+	                            type: "CHANGE_PARENT",
 	                            parent: parent
 	                        });
 	                        dispatch({
-	                            type: 'FETCH_DONE',
+	                            type: "FETCH_DONE",
 	                            children: children
 	                        });
 	                        return [2 /*return*/];
@@ -23569,7 +23569,7 @@
 	        var res;
 	        return __generator(this, function (_a) {
 	            switch (_a.label) {
-	                case 0: return [4 /*yield*/, ajax.post('/files').set('Content-Type', 'application/json').send(JSON.stringify(body))];
+	                case 0: return [4 /*yield*/, ajax.post("/files").set("Content-Type", "application/json").send(JSON.stringify(body))];
 	                case 1:
 	                    res = _a.sent();
 	                    newChild(res, dispatch);
@@ -23586,7 +23586,7 @@
 	        var res;
 	        return __generator(this, function (_a) {
 	            switch (_a.label) {
-	                case 0: return [4 /*yield*/, ajax.post("/files/" + id + "/tags").set('Content-Type', 'application/json').send(JSON.stringify(body))];
+	                case 0: return [4 /*yield*/, ajax.post("/files/" + id + "/tags").set("Content-Type", "application/json").send(JSON.stringify(body))];
 	                case 1:
 	                    res = _a.sent();
 	                    updateChild(res, dispatch);
@@ -23603,7 +23603,7 @@
 	        return __generator(this, function (_a) {
 	            switch (_a.label) {
 	                case 0: return [4 /*yield*/, ajax.delete("files/" + id + "/tags")
-	                        .set('Content-Type', 'application/json')
+	                        .set("Content-Type", "application/json")
 	                        .send(JSON.stringify({ "tag": tag }))];
 	                case 1:
 	                    res = _a.sent();
@@ -23616,26 +23616,26 @@
 	exports.removeTag = removeTag;
 	function fileUploadModal() {
 	    return ({
-	        type: 'SHOW_UPLOAD_DIALOG'
+	        type: "SHOW_UPLOAD_DIALOG"
 	    });
 	}
 	exports.fileUploadModal = fileUploadModal;
 	function closeFileUploadModal() {
 	    return ({
-	        type: 'HIDE_UPLOAD_DIALOG'
+	        type: "HIDE_UPLOAD_DIALOG"
 	    });
 	}
 	exports.closeFileUploadModal = closeFileUploadModal;
 	function uploadFile(parent, file) {
 	    var _this = this;
 	    var formData = new FormData();
-	    formData.append('file', file);
-	    formData.append('parentId', parent || -1);
+	    formData.append("file", file);
+	    formData.append("parentId", parent || -1);
 	    return function (dispatch) { return __awaiter(_this, void 0, void 0, function () {
 	        var res;
 	        return __generator(this, function (_a) {
 	            switch (_a.label) {
-	                case 0: return [4 /*yield*/, ajax.post('/files/add_file').send(formData)];
+	                case 0: return [4 /*yield*/, ajax.post("/files/add_file").send(formData)];
 	                case 1:
 	                    res = _a.sent();
 	                    newChild(res, dispatch);
@@ -23647,13 +23647,13 @@
 	exports.uploadFile = uploadFile;
 	function move(id) {
 	    return {
-	        id: id, type: 'MOVE'
+	        id: id, type: "MOVE"
 	    };
 	}
 	exports.move = move;
 	function copy(id) {
 	    return {
-	        id: id, type: 'COPY'
+	        id: id, type: "COPY"
 	    };
 	}
 	exports.copy = copy;
@@ -23667,11 +23667,11 @@
 	            switch (_a.label) {
 	                case 0:
 	                    _a.trys.push([0, 2, , 3]);
-	                    return [4 /*yield*/, ajax.post("/files/" + id + "/" + op).set('Content-Type', 'application/json').send(JSON.stringify(body))];
+	                    return [4 /*yield*/, ajax.post("/files/" + id + "/" + op).set("Content-Type", "application/json").send(JSON.stringify(body))];
 	                case 1:
 	                    res = _a.sent();
 	                    dispatch({
-	                        type: 'PASTED'
+	                        type: "PASTED"
 	                    });
 	                    changePage(res, parent, dispatch);
 	                    return [3 /*break*/, 3];
@@ -23697,11 +23697,11 @@
 	                    if (res) {
 	                        children = JSON.parse(res.text);
 	                        dispatch({
-	                            type: 'CHANGE_PARENT',
+	                            type: "CHANGE_PARENT",
 	                            parent: null
 	                        });
 	                        dispatch({
-	                            type: 'FETCH_DONE',
+	                            type: "FETCH_DONE",
 	                            children: children
 	                        });
 	                    }
@@ -23719,18 +23719,18 @@
 	        return __generator(this, function (_a) {
 	            switch (_a.label) {
 	                case 0: return [4 /*yield*/, ajax.post("files/search")
-	                        .set('Content-Type', 'application/json').
+	                        .set("Content-Type", "application/json").
 	                        send(JSON.stringify(body))];
 	                case 1:
 	                    res = _a.sent();
 	                    if (res) {
 	                        children = JSON.parse(res.text);
 	                        dispatch({
-	                            type: 'CHANGE_PARENT',
+	                            type: "CHANGE_PARENT",
 	                            parent: null
 	                        });
 	                        dispatch({
-	                            type: 'FETCH_DONE',
+	                            type: "FETCH_DONE",
 	                            children: children
 	                        });
 	                    }
@@ -23749,8 +23749,8 @@
 	            switch (_a.label) {
 	                case 0:
 	                    _a.trys.push([0, 2, , 3]);
-	                    return [4 /*yield*/, ajax.post('shared/add')
-	                            .set('Content-Type', 'application/json')
+	                    return [4 /*yield*/, ajax.post("shared/add")
+	                            .set("Content-Type", "application/json")
 	                            .send(JSON.stringify({
 	                            record_id: recordId,
 	                            user_name: userName,
@@ -23758,7 +23758,7 @@
 	                        }))];
 	                case 1:
 	                    res = _a.sent();
-	                    bootbox.alert('Shared File Sucessfully');
+	                    bootbox.alert("Shared File Sucessfully");
 	                    return [3 /*break*/, 3];
 	                case 2:
 	                    error_4 = _a.sent();
@@ -23781,11 +23781,11 @@
 	                    res = _a.sent();
 	                    children = JSON.parse(res.text);
 	                    dispatch({
-	                        type: 'CHANGE_PARENT',
+	                        type: "CHANGE_PARENT",
 	                        parent: null
 	                    });
 	                    dispatch({
-	                        type: 'FETCH_DONE',
+	                        type: "FETCH_DONE",
 	                        children: children
 	                    });
 	                    return [2 /*return*/];
@@ -23805,7 +23805,7 @@
 	                    res = _a.sent();
 	                    user = JSON.parse(res.text);
 	                    dispatch({
-	                        type: 'CHANGE_USER',
+	                        type: "CHANGE_USER",
 	                        user: user
 	                    });
 	                    return [2 /*return*/];
@@ -23825,11 +23825,11 @@
 	                    res = _a.sent();
 	                    children = JSON.parse(res.text);
 	                    dispatch({
-	                        type: 'CHANGE_PARENT',
+	                        type: "CHANGE_PARENT",
 	                        parent: null
 	                    });
 	                    dispatch({
-	                        type: 'FETCH_DONE',
+	                        type: "FETCH_DONE",
 	                        children: children
 	                    });
 	                    return [2 /*return*/];
@@ -23841,14 +23841,14 @@
 	function newChild(res, dispatch) {
 	    var child = JSON.parse(res.text);
 	    dispatch({
-	        type: 'NEW_CHILD',
+	        type: "NEW_CHILD",
 	        child: child
 	    });
 	}
 	function updateChild(res, dispatch) {
 	    var child = JSON.parse(res.text);
 	    dispatch({
-	        type: 'UPDATE_CHILD',
+	        type: "UPDATE_CHILD",
 	        child: child
 	    });
 	}
@@ -23862,7 +23862,7 @@
 	                    response = _a.sent();
 	                    children = JSON.parse(response.text);
 	                    dispatch({
-	                        type: 'FETCH_DONE',
+	                        type: "FETCH_DONE",
 	                        children: children
 	                    });
 	                    return [2 /*return*/];
@@ -25582,13 +25582,13 @@
 	        var formData = new FormData();
 	        formData.append("username", username);
 	        formData.append("password", password);
-	        return ajax.post('/users')
+	        return ajax.post("/users")
 	            .send(formData).end(function (err, res) {
 	            if (!err && res) {
-	                bootbox.alert('User registered successfully.');
+	                bootbox.alert("User registered successfully.");
 	            }
 	            else {
-	                bootbox.alert('Failed registering user. Check username');
+	                bootbox.alert("Failed registering user. Check username");
 	            }
 	        });
 	    };
@@ -25614,8 +25614,8 @@
 	        React.createElement(react_bootstrap_1.Button, { type: "submit" }, "Login")));
 	};
 	exports.LoginPage = function (props) {
-	    if (props.location.search.indexOf('error') != -1) {
-	        bootbox.alert('Login failed. Check credentials.');
+	    if (props.location.search.indexOf("error") !== -1) {
+	        bootbox.alert("Login failed. Check credentials.");
 	    }
 	    return (React.createElement(react_bootstrap_1.Grid, null,
 	        React.createElement(react_bootstrap_1.Row, null,
@@ -44422,7 +44422,7 @@
 	};
 	var mapDispatchToProps = function (dispatch) {
 	    return {
-	        'actions': redux_1.bindActionCreators(actionCreators, dispatch)
+	        "actions": redux_1.bindActionCreators(actionCreators, dispatch)
 	    };
 	};
 	var Main = function (props) {
@@ -44626,8 +44626,8 @@
 	};
 	var mapDispatchToProps = function (dispatch) {
 	    return {
-	        'uploadFile': redux_1.bindActionCreators(actionCreators.uploadFile, dispatch),
-	        'hide': redux_1.bindActionCreators(actionCreators.closeFileUploadModal, dispatch)
+	        "uploadFile": redux_1.bindActionCreators(actionCreators.uploadFile, dispatch),
+	        "hide": redux_1.bindActionCreators(actionCreators.closeFileUploadModal, dispatch)
 	    };
 	};
 	exports.Upload = react_redux_1.connect(mapStateToProps, mapDispatchToProps)(exports.UploadModal);
@@ -44681,7 +44681,7 @@
 	};
 	exports.Navbar = function (props) {
 	    var createFolder = function () {
-	        bootbox.prompt('Enter name of the folder', function (name) {
+	        bootbox.prompt("Enter name of the folder", function (name) {
 	            name && props.addRecord(name, props.parent, true);
 	        });
 	    };

@@ -1,14 +1,14 @@
-import * as React from 'react';
-import { Modal, FormControl, Button } from 'react-bootstrap';
-import { bindActionCreators, Dispatch } from 'redux';
-import { connect } from 'react-redux';
-import { IState } from '../interfaces/IState';
-import * as actionCreators from '../actionCreators';
+import * as React from "react";
+import { Modal, FormControl, Button } from "react-bootstrap";
+import { bindActionCreators, Dispatch } from "redux";
+import { connect } from "react-redux";
+import { IState } from "../interfaces/IState";
+import * as actionCreators from "../actionCreators";
 interface IProps {
     show: boolean;
     hide(): any;
-    uploadFile(parent:number,file:File):any;
-    parent: number
+    uploadFile(parent: number, file: File): any;
+    parent: number;
 }
 
 export const UploadModal = (props: IProps) => {
@@ -26,19 +26,19 @@ export const UploadModal = (props: IProps) => {
             </Modal.Footer>
         </Modal>
     );
-}
+};
 
 const mapStateToProps = (state: IState) => {
     return {
         parent: state.parent,
         show: state.modals.upload
     };
-}
+};
 
 const mapDispatchToProps = (dispatch: Dispatch<any>) => {
     return {
-        'uploadFile': bindActionCreators(actionCreators.uploadFile, dispatch),
-        'hide': bindActionCreators(actionCreators.closeFileUploadModal, dispatch)
-    }
-}
+        "uploadFile": bindActionCreators(actionCreators.uploadFile, dispatch),
+        "hide": bindActionCreators(actionCreators.closeFileUploadModal, dispatch)
+    };
+};
 export const Upload = connect(mapStateToProps, mapDispatchToProps)(UploadModal);

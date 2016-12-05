@@ -18,7 +18,7 @@ export interface IProps {
 }
 
 export interface IFileProps {
-    name: string
+    name: string;
     id: number;
     parent: number;
     rename(id: number): void;

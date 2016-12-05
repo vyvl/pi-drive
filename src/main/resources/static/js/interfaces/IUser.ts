@@ -1,6 +1,6 @@
-import IRecord from './IRecord';
-export interface IUser{
+import IRecord from "./IRecord";
+export interface IUser {
     username: string;
-    root: IRecord;  
+    root: IRecord;
 }
 export default IUser;

@@ -6,7 +6,7 @@ export interface IState {
     children: IRecord[];
     op: IOp;
     user: IUser;
-    modals: modal
+    modals: Modal;
 
 }
 
@@ -15,7 +15,7 @@ interface IOp {
     type: string;
 }
 
-interface modal {
+interface Modal {
     upload: boolean;
 }
 
